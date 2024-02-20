@@ -1,0 +1,1 @@
+# cold-storage-plugin
