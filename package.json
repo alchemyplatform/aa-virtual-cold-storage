@@ -1,0 +1,80 @@
+{
+  "name": "@alchemy/cold-storage-wallet",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "chakra-types-gen": "chakra-cli tokens ./theme/theme.ts",
+    "postinstall": "yarn run chakra-types-gen",
+    "prepare": "husky install",
+    "seed": "node scripts/seed.mjs",
+    "cleanup": "node scripts/cleanup.mjs",
+    "bootstrap": "node scripts/bootstrap.mjs",
+    "setup": "yarn install && node scripts/cleanup.mjs --force && node scripts/setup.mjs && node scripts/seed.mjs"
+  },
+  "engines": {
+    "npm": ">=9.6.0 <10.0.0",
+    "node": ">=18.17.0 <19.0.0"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx}": [
+      "prettier --config=.prettierrc.precommit.js --write",
+      "eslint --cache --fix"
+    ],
+    "*.{css,json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "dependencies": {
+    "@chakra-ui/next-js": "^2.2.0",
+    "@chakra-ui/react": "^2.8.2",
+    "@chakra-ui/styled-system": "^2.9.2",
+    "@chakra-ui/theme": "^3.3.1",
+    "@chakra-ui/theme-tools": "^2.1.2",
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
+    "@fluentui/react-icons": "^2.0.230",
+    "@xata.io/client": "^0.29.2",
+    "chroma-js": "^2.4.2",
+    "dotenv": "^16.4.5",
+    "framer-motion": "^11.0.6",
+    "lodash": "^4.17.21",
+    "next": "14.1.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "slugify": "^1.6.6",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@chakra-ui/cli": "^2.4.1",
+    "@types/chroma-js": "^2.4.4",
+    "@types/lodash": "^4.14.202",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/uuid": "^9.0.8",
+    "@xata.io/cli": "^0.15.8",
+    "create-chakra-icons": "^1.3.0",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "14.1.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-check-file": "^2.7.1",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-jsx-a11y": "^6.8.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
+    "prettier": "3.2.5",
+    "prettier-plugin-organize-imports": "^3.2.4",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^7.0.2"
+  },
+  "resolutions": {
+    "strip-ansi": "6.0.0"
+  }
+}

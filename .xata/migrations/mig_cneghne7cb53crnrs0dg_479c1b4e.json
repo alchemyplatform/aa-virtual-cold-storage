@@ -1,0 +1,19 @@
+{
+  "id": "mig_cneghne7cb53crnrs0dg",
+  "parentID": "mig_cneghl67cb53crnrs0cg",
+  "checksum": "1:479c1b4e6d914be053152902a61d654aee36a406d1e007f4881031fb0feacf30",
+  "operations": [
+    {
+      "addColumn": {
+        "column": {
+          "name": "image",
+          "type": "file",
+          "file": {
+            "defaultPublicAccess": true
+          }
+        },
+        "table": "image"
+      }
+    }
+  ]
+}
