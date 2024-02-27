@@ -6,6 +6,7 @@ import {IEntryPoint} from "account-abstraction/interfaces/IEntryPoint.sol";
 import {Script, console2} from "forge-std/Script.sol";
 import {ColdStoragePlugin} from "../src/ColdStoragePlugin.sol";
 import {DevPaymaster} from "../src/DevPaymaster.sol";
+import {FreelyMintableNft} from "../src/nft/FreelyMintableNft.sol";
 
 contract DeployColdStorage is Script {
     IEntryPoint private constant ENTRY_POINT = IEntryPoint(0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789);
@@ -18,6 +19,7 @@ contract DeployColdStorage is Script {
     ) internal {
         vm.startBroadcast(privateKey);
         address plugin = _deployColdStoragePlugin();
+        address freeNft = _deployFreelyMintableNft();
         address devPaymaster;
         if (deployDevPaymaster) {
             devPaymaster = _deployDevPaymaster();
@@ -33,6 +35,9 @@ contract DeployColdStorage is Script {
                 "export const ", variablePrefix, '_COLD_STORAGE_PLUGIN_ADDRESS = "', vm.toString(plugin), '";'
             )
         );
+        vm.writeLine(
+            path, string.concat("export const ", variablePrefix, '_NFT_ADDRESS = "', vm.toString(plugin), '";')
+        );
         if (deployDevPaymaster) {
             vm.writeLine(
                 path,
@@ -42,7 +47,8 @@ contract DeployColdStorage is Script {
             );
         }
         console2.log("ColdStoragePlugin: %s", plugin);
-        if (!deployDevPaymaster) {
+        console2.log("FreelyMintableNft: %s", freeNft);
+        if (deployDevPaymaster) {
             console2.log("DevPaymaster: %s", devPaymaster);
         }
         vm.stopBroadcast();
@@ -58,6 +64,18 @@ contract DeployColdStorage is Script {
         address plugin = address(new ColdStoragePlugin{salt: 0}());
         require(plugin == addr, "Plugin address did not match predicted");
         return plugin;
+    }
+
+    function _deployFreelyMintableNft() private returns (address) {
+        address addr = Create2.computeAddress(
+            bytes32(0), keccak256(abi.encodePacked(type(FreelyMintableNft).creationCode, abi.encode())), CREATE2_FACTORY
+        );
+        if (addr.code.length > 0) {
+            return addr;
+        }
+        address nft = address(new FreelyMintableNft{salt: 0}());
+        require(nft == addr, "NFT address did not match predicted");
+        return nft;
     }
 
     function _deployDevPaymaster() private returns (address) {
