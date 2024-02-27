@@ -19,5 +19,4 @@ forge script script/DeployToAnvil.s.sol:DeployToAnvil \
   --sender $FACTORY_OWNER \
   --unlocked
 cast rpc anvil_stopImpersonatingAccount $FACTORY_OWNER
-mkdir -p ../app/src/generated/
-cp out/anvilConstants.ts ../app/src/generated/
+cp out/anvil.ts ../utils/

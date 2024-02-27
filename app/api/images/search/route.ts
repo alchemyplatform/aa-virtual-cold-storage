@@ -1,0 +1,33 @@
+import { getXataClient } from '@/utils/xata';
+
+// Next.js edge runtime
+// https://nextjs.org/docs/pages/api-reference/edge
+export const runtime = 'edge';
+export const preferredRegion = 'iad1';
+
+const xata = getXataClient();
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const searchQuery = searchParams.get('query') ?? '';
+
+  // Return results from the tag and image tables
+  const { records } = await xata.search.all(searchQuery, {
+    tables: [
+      {
+        table: 'tag',
+        target: [{ column: 'name' }]
+      },
+      {
+        table: 'image',
+        target: [{ column: 'name' }]
+      }
+    ],
+    fuzziness: 1,
+    prefix: 'phrase'
+  });
+
+  return new Response(JSON.stringify(records), {
+    headers: { 'Cache-Control': 'max-age=1, stale-while-revalidate=300' }
+  });
+}

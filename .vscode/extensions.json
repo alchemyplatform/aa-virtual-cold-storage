@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "SocketSecurity.vscode-socket-security",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "juanblanco.vscode-solidity"
+  ]
+}
