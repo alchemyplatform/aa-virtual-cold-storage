@@ -16,3 +16,6 @@
 [submodule "contracts/lib/solmate"]
 	path = contracts/lib/solmate
 	url = https://github.com/transmissions11/solmate
+[submodule "contracts/lib/foundry-soulmate-erc721-example"]
+	path = contracts/lib/foundry-soulmate-erc721-example
+	url = https://github.com/alchemyplatform/foundry-soulmate-erc721-example
