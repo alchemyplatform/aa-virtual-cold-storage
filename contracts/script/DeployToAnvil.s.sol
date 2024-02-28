@@ -34,7 +34,7 @@ contract DeployToAnvil is Script, DeployColdStorage {
         _rethrowIfError(success, result);
         vm.stopBroadcast();
 
-        _deployColdStorageContracts(ANVIL_PRIVATE_KEY, "anvilConstants.ts", "ANVIL", true);
+        _deployColdStorageContracts(ANVIL_PRIVATE_KEY, "anvil.ts", "ANVIL", true);
     }
 
     function _deploy(bytes memory saltAndInitCode) private returns (address) {

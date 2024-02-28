@@ -4,4 +4,10 @@ out = "out"
 libs = ["lib"]
 fs_permissions = [{ access = "read-write", path = "./out" }]
 
+[rpc_endpoints]
+arbitrum-sepolia = "${ARBITRUM_SEPOLIA_RPC_URL}"
+
+[etherscan]
+arbitrum-sepolia = { key = "${ARBISCAN_API_KEY}" }
+
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
