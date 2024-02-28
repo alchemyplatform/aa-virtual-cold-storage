@@ -3,6 +3,9 @@ import chroma from 'chroma-js';
 export type SemanticTokenColor = keyof (typeof semanticTokens)['colors'];
 
 // seed colors
+const main_pink = '#F252BA';
+// const second_orange = '#F2784B';
+const light_pink = '#df9cf7';
 const primary_purple = '#8566FF';
 const yellow_gold = '#F6DF8A';
 const apricot_orange = '#EFA764';
@@ -10,10 +13,8 @@ const crimson_red = '#DC6161';
 const fresh_mint = '#57DC9C';
 const soft_orchid = '#F6F4FF';
 
-//  const SEED_COLOR: chroma.Color = chroma.random().set(`hsl.s`, 0.6);
-//  Purple
-
-const SEED_COLOR: chroma.Color = chroma(primary_purple);
+// This sets the mood of the theme. A blue color will result in a blue theme...etc
+const SEED_COLOR: chroma.Color = chroma(main_pink);
 //const DESATURATE_GRAY_LEVEL = 3;
 
 // Blue
@@ -21,8 +22,6 @@ const SEED_COLOR: chroma.Color = chroma(primary_purple);
 const DESATURATE_GRAY_LEVEL = 3.0; */
 //  const primary = chroma("#0084ff");
 
-// This sets the mood of the theme. A blue color will result in a blue theme...etc
-//  const SEED_COLOR: chroma.Color = chroma(`#7300ff`);
 // Moves from light to dark against a curve
 const LIGHTNESS_CURVE = [0.95, 0.85, 0.75, 0.65, 0.55, 0.45, 0.35, 0.18, 0.12, 0.08];
 // Optional lightness curve for darker blacks
@@ -49,7 +48,8 @@ const shiftHue = (color: chroma.Color, amount: number) => {
   return chroma(color).set(`hsl.h`, colorHue + amount);
 };
 
-// const primary = chroma(primary_purple);
+const purple = chroma(primary_purple);
+const pink = chroma(light_pink);
 const teal = chroma(SEED_COLOR.set(`hsl.h`, 180));
 const red = chroma(crimson_red);
 const orange = chroma(apricot_orange);
@@ -73,34 +73,34 @@ const grayPalette: string[] = [
 ];
 
 // palette generated from https://gka.github.io/palettes/
-// input colors: #f0ecff, #8566ff (primary purple), #0f0c1b (midnight plum)
+// input colors: #f0ecff, #F252BA (primary), #0f0c1b (midnight plum)
 // no bezier interpolation
-const purplePallette: string[] = [
+const primaryPallette: string[] = [
   '#f0ecff',
-  '#dacaff',
-  '#c1a9ff',
-  '#a688ff',
-  '#8768ff',
-  '#6c53cd',
-  '#53419c',
-  '#3c2f6d',
-  '#251f42',
+  '#f1c4ed',
+  '#f19ada',
+  '#f269c4',
+  '#d74aa7',
+  '#ac3d89',
+  '#83306c',
+  '#5c2451',
+  '#371837',
   '#0f0c1b'
 ];
 
 // palette generated from https://gka.github.io/palettes/
-// input colors: #fef6ff, #df9cf7, #0f0c1b (midnight plum)
-// no bezier interpolation and no correct lightness
-const pinkPalette: string[] = [
-  '#fef6ff',
-  '#f7e2fd',
-  '#f0cefb',
-  '#e9bafa',
-  '#e2a6f8',
-  '#c88cdf',
-  '#9a6cae',
-  '#6b4c7d',
-  '#3d2c4c',
+// input colors: #f0ecff, #F2784B (accent), #0f0c1b (midnight plum)
+// no bezier interpolation
+const accentPallette: string[] = [
+  '#f0ecff',
+  '#f1c9c8',
+  '#f1a38e',
+  '#f2794c',
+  '#c96542',
+  '#a1523a',
+  '#7b3f32',
+  '#562e2a',
+  '#341d23',
   '#0f0c1b'
 ];
 
@@ -156,13 +156,13 @@ export const colors = {
   orange: generateColorSet(orange),
   yellow: generateColorSet(yellow),
   green: generateColorSet(green),
-  purple: generatePalette(purplePallette),
+  purple: generateColorSet(purple),
   blue: generateColorSet(blue),
-  pink: generatePalette(pinkPalette),
-  // the primary color is the purple palette
-  primary: generatePalette(purplePallette),
-  // the accent color is the pink palette
-  accent: generatePalette(pinkPalette)
+  pink: generateColorSet(pink),
+  // the primary color
+  primary: generatePalette(primaryPallette),
+  // the accent color
+  accent: generatePalette(accentPallette)
 };
 
 /**
@@ -272,8 +272,8 @@ const generateColorsObjNoDesc = (
 };
 
 const brandColorsObj: any = {
-  primary: { _light: `purple.500`, _dark: `purple.300`, description: `Primary brand color` },
-  accent: { _light: `pink.500`, _dark: `pink.300`, description: `Accent brand color` },
+  primary: { _light: `primary.500`, _dark: `primary.300`, description: `Primary brand color` },
+  accent: { _light: `accent.500`, _dark: `accent.300`, description: `Accent brand color` },
   success: { _light: `green.500`, _dark: `green.300`, description: `Success state` },
   danger: { _light: `red.500`, _dark: `red.300`, description: `Danger state` },
   warning: { _light: `yellow.500`, _dark: `yellow.300`, description: `Warning state` },
@@ -363,8 +363,8 @@ const bgColorsObj: any = {
     _light: '#e4dffa',
     _dark: chroma(colors.gray[900]).brighten(0.5).hex()
   },
-  bgPrimary: { _light: 'purple.500', _dark: 'purple.200' },
-  bgHighlight: { _light: 'purple.500', _dark: 'purple.500' },
+  bgPrimary: { _light: 'primary.500', _dark: 'primary.200' },
+  bgHighlight: { _light: 'primary.500', _dark: 'primary.500' },
   bgDanger: {
     _light: 'red.50',
     _dark: 'red.700'
@@ -409,7 +409,6 @@ export const semanticTokens = {
       // _dark: chroma(contrastScale.lowest.dark).brighten(0.5).hex()
       _dark: contrastScale.low.dark
     },
-    // Tokens acording to the Figma designs that can be found here https://www.figma.com/file/RQlFwhHSMdbdVMZC4WtmKa/UI-Library?node-id=73%3A3025
     inputBg: {
       _light: 'white',
       _dark: colors.gray[900]
