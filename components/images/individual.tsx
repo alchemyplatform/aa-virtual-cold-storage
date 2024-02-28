@@ -1,4 +1,5 @@
 'use client';
+
 import { ImageRecord, TagRecord } from '@/utils/xata';
 import { Link } from '@chakra-ui/next-js';
 import { Box, BoxProps, Button, Flex, FormControl, FormLabel, Heading, Tag, Text, useToast } from '@chakra-ui/react';

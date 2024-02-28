@@ -30,6 +30,10 @@
     ]
   },
   "dependencies": {
+    "@alchemy/aa-accounts": "^3.2.1",
+    "@alchemy/aa-alchemy": "^3.2.1",
+    "@alchemy/aa-core": "^3.2.1",
+    "@alchemy/aa-signers": "^3.2.1",
     "@chakra-ui/next-js": "^2.2.0",
     "@chakra-ui/react": "^2.8.2",
     "@chakra-ui/styled-system": "^2.9.2",
@@ -47,6 +51,7 @@
     "next": "14.1.0",
     "react": "^18",
     "react-dom": "^18",
+    "react-icons": "^5.0.1",
     "slugify": "^1.6.6",
     "uuid": "^9.0.1",
     "viem": "^2.7.16",

@@ -1,4 +1,5 @@
 'use client';
+
 import { Link } from '@chakra-ui/next-js';
 import { Flex, Icon, IconButton, Text, Tooltip, useColorMode } from '@chakra-ui/react';
 import { WeatherMoon20Filled, WeatherSunny20Filled } from '@fluentui/react-icons';
@@ -17,7 +18,7 @@ export const BaseLayout: FC<BaseLayoutProps> = ({ children }) => {
   const { toggleColorMode, colorMode } = useColorMode();
   const isDark = colorMode === 'dark';
   return (
-    <Flex flexDir="column" maxW={1200} minH="100vh" mx={{ base: 4, lg: 'auto' }}>
+    <Flex flexDir="column" padding={12} maxW={1200} minH="100vh" mx={{ base: 4, lg: 'auto' }}>
       <Flex justifyContent="space-between" py={8}>
         <NextLink href="/">
           <AppIcon />
