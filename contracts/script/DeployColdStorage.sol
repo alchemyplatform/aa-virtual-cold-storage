@@ -36,7 +36,7 @@ contract DeployColdStorage is Script {
             )
         );
         vm.writeLine(
-            path, string.concat("export const ", variablePrefix, '_NFT_ADDRESS = "', vm.toString(plugin), '";')
+            path, string.concat("export const ", variablePrefix, '_NFT_ADDRESS = "', vm.toString(freeNft), '";')
         );
         if (deployDevPaymaster) {
             vm.writeLine(
@@ -56,7 +56,9 @@ contract DeployColdStorage is Script {
 
     function _deployColdStoragePlugin() private returns (address) {
         address addr = Create2.computeAddress(
-            bytes32(0), keccak256(abi.encodePacked(type(ColdStoragePlugin).creationCode, abi.encode())), CREATE2_FACTORY
+            bytes32(0),
+            keccak256(abi.encodePacked(type(ColdStoragePlugin).creationCode, abi.encode())),
+            CREATE2_FACTORY
         );
         if (addr.code.length > 0) {
             return addr;
@@ -68,7 +70,9 @@ contract DeployColdStorage is Script {
 
     function _deployFreelyMintableNft() private returns (address) {
         address addr = Create2.computeAddress(
-            bytes32(0), keccak256(abi.encodePacked(type(FreelyMintableNft).creationCode, abi.encode())), CREATE2_FACTORY
+            bytes32(0),
+            keccak256(abi.encodePacked(type(FreelyMintableNft).creationCode, abi.encode())),
+            CREATE2_FACTORY
         );
         if (addr.code.length > 0) {
             return addr;
