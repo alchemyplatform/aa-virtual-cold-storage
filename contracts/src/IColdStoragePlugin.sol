@@ -4,6 +4,11 @@ pragma solidity ^0.8.22;
 import {Call} from "modular-account/interfaces/IStandardExecutor.sol";
 
 interface IColdStoragePlugin {
+    enum FunctionId {
+        USER_OP_VALIDATION_STORAGE_KEY,
+        EXECUTE_PRE_EXEC_HOOK
+    }
+
     struct ERC721Token {
         address contractAddress;
         uint256 tokenId;

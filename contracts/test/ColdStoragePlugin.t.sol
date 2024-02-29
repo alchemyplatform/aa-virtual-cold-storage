@@ -9,10 +9,12 @@ import {MultiOwnerModularAccountFactory} from "modular-account/factory/MultiOwne
 import {FunctionReference} from "modular-account/interfaces/IPluginManager.sol";
 import {IEntryPoint} from "modular-account/interfaces/erc4337/IEntryPoint.sol";
 import {EntryPoint} from "@eth-infinitism/account-abstraction/core/EntryPoint.sol";
-import {NFT} from "foundry-soulmate-erc721-example/src/NFT.sol"; 
+import {FreelyMintableNft} from "../src/nft/FreelyMintableNft.sol"; 
+import {FunctionReferenceLib} from "modular-account/helpers/FunctionReferenceLib.sol";
+import {IMultiOwnerPlugin} from "modular-account/plugins/owner/IMultiOwnerPlugin.sol";
 
 contract ColdStoragePluginTest is Test {
-    NFT public nft;
+    FreelyMintableNft public nft;
     ColdStoragePlugin public coldStoragePlugin;
     IEntryPoint public entryPoint;
     address[] public owners;
@@ -46,7 +48,13 @@ contract ColdStoragePluginTest is Test {
 
         coldStoragePlugin = new ColdStoragePlugin();
         bytes32 manifestHash = keccak256(abi.encode(coldStoragePlugin.pluginManifest()));
-        FunctionReference[] memory dependencies = new FunctionReference[](0);
+        FunctionReference[] memory dependencies = new FunctionReference[](2);
+        dependencies[0] = FunctionReferenceLib.pack(
+            address(_multiOwnerPlugin), uint8(IMultiOwnerPlugin.FunctionId.RUNTIME_VALIDATION_OWNER_OR_SELF)
+        );
+        dependencies[1] = FunctionReferenceLib.pack(
+            address(_multiOwnerPlugin), uint8(IMultiOwnerPlugin.FunctionId.USER_OP_VALIDATION_OWNER)
+        );
 
         vm.prank(_owner);
         _account.installPlugin({
@@ -57,18 +65,26 @@ contract ColdStoragePluginTest is Test {
         });
         
         // Create a NFT contract to test
-        nft = new NFT("Test NFT", "TEST", "baseUri");
+        nft = new FreelyMintableNft();
     }
 
     function testPreExecutionHook() public {
-        nft.mintTo{value: 0.0 ether}(address(_account));
+        nft.mint(address(_account), 1);
+        nft.mint(address(_owner), 3);
         vm.prank(_owner);
-
         ColdStoragePlugin(address(_account)).lockERC721All(100);
 
+        // console2.log("%s, %s", _account, _owner);
+        // _account.execute(address(coldStoragePlugin), 0, abi.encodeWithSelector(ColdStoragePlugin.lockERC721All.selector, 100));
         // Try to transfer the NFT
-        vm.expectRevert("StdChains getChain(string): Chain with alias \"does_not_exist\" not found.");
-        nft.safeTransferFrom(address(_account), address(this), 0);
+
+            // error RuntimeValidationFunctionReverted(address plugin, uint8 functionId, bytes revertReason);
+
+        // // vm.expectRevert("Existing lock in place");
         
+        // vm.expectRevert(abi.encodeWithSelector(UpgradeableModularAccount.RuntimeValidationFunctionReverted.selector, address(_multiOwnerPlugin), uint8(0), "Existing lock in place"));
+        vm.expectRevert(abi.encodeWithSelector(UpgradeableModularAccount.PreExecHookReverted.selector, address(coldStoragePlugin), 1, abi.encodeWithSelector(0x08c379a0, "ERC721 locked")));
+        vm.prank(_owner);
+        _account.execute(address(nft), 0, abi.encodeWithSelector(0x42842e0e, address(_account), address(uint160(1)), 0));
     }
 }
