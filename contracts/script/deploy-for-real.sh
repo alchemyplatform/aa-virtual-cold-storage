@@ -13,6 +13,7 @@ source .env
 forge script script/DeployForReal.s.sol:DeployForReal \
   --broadcast \
   --rpc-url $ARBITRUM_SEPOLIA_RPC_URL \
-  --verify \
+# Verification currently broken on Sepolia Arbiscan
+#  --verify \
   -vvvv
 cp out/deployed.ts ../utils/
