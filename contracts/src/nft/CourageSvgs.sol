@@ -20,11 +20,11 @@ library CourageSvgs {
                 '<svg width="350" height="350" viewbox="0 0 350 350" xmlns="http://www.w3.org/2000/svg">\n'
                 '  <filter id="neon">\n'
                 '    <feFlood flood-color="#FFD54F" flood-opacity="0.5" in="SourceGraphic" />\n'
-                '    <feComposite operator="in" in2="SourceGraphic" />\n' '    <feGaussianBlur stdDeviation="5" />\n'
-                '    <feComponentTransfer result="glow1">\n' '      <feFuncA type="linear" slope="4" intercept="0" />\n'
-                "    </feComponentTransfer>\n" "    <feMerge>\n" '      <feMergeNode in="glow1" />\n'
-                '      <feMergeNode in="SourceGraphic" />\n' "    </feMerge>\n" "  </filter>\n"
-                '  <rect width="100%" height="100%" fill="#182026" />\n',
+                '    <feComposite operator="in" in2="SourceGraphic" />\n'
+                '    <feGaussianBlur stdDeviation="5" />\n' '    <feComponentTransfer result="glow1">\n'
+                '      <feFuncA type="linear" slope="4" intercept="0" />\n' "    </feComponentTransfer>\n"
+                "    <feMerge>\n" '      <feMergeNode in="glow1" />\n' '      <feMergeNode in="SourceGraphic" />\n'
+                "    </feMerge>\n" "  </filter>\n" '  <rect width="100%" height="100%" fill="#182026" />\n',
                 generateCircles(tokenId),
                 "</svg>\n"
             )

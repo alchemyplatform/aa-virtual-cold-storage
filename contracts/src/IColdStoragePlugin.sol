@@ -101,5 +101,6 @@ interface IColdStoragePlugin {
     /// @return allDuration The duration of the lock on all ERC721 tokens, 0 if there is no lock
     /// @return collectionLocks The locks on ERC721 collections
     /// @return tokenLocks The locks on ERC721 tokens
-    // function getERC721Locks(address account) external view returns (uint256 allDuration, ERC721CollectionLock[] memory collectionLocks, ERC721TokenLock[] memory tokenLocks);
+    // function getERC721Locks(address account) external view returns (uint256 allDuration, ERC721CollectionLock[]
+    // memory collectionLocks, ERC721TokenLock[] memory tokenLocks);
 }
