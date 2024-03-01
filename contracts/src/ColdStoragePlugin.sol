@@ -38,8 +38,6 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     bytes4 constant SAFE_TRANSFER_FROM = 0x42842e0e;
     bytes4 constant SAFE_TRANSFER_FROM_WITH_DATA = 0xb88d4fde;
 
-    bytes4 constant EXECUTE = 0xb61d27f6;
-
     /// @inheritdoc IColdStoragePlugin
     function executeWithStorageKey(Call[] calldata calls, address /* storageKey */ )
         external
@@ -65,13 +63,10 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     }
 
     /// @inheritdoc IColdStoragePlugin
-    function addOrReplaceStorageKey(address storageKey) external {
-        require(storageKeys[msg.sender] == address(0), "Storage key already exists");
-        storageKeys[msg.sender] = storageKey;
+    function changeStorageKey(address account, address storageKey) external {
+        require(storageKeys[account] == msg.sender, "Must use storage key to change storage key");
+        storageKeys[account] = storageKey;
     }
-
-    /// @inheritdoc IColdStoragePlugin
-    function removeStorageKey() external {}
 
     /// @inheritdoc IColdStoragePlugin
     function lockERC721All(uint48 duration) external {
@@ -108,6 +103,28 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
             );
 
             erc721Locks[msg.sender].set(false, lock.token.contractAddress, lock.token.tokenId, block.timestamp + lock.duration);
+        }
+    }
+
+    /// @inheritdoc IColdStoragePlugin
+    function unlockERC721All(address account) external {
+        require(storageKeys[account] == msg.sender, "Must use storage key to unlock");
+        delete erc721AllLocks[account];
+    }
+
+    /// @inheritdoc IColdStoragePlugin
+    function unlockERC721Collection(address account, address[] calldata collections) external {
+        require(storageKeys[account] == msg.sender, "Must use storage key to unlock");
+        for (uint256 i = 0; i < collections.length; ++i) {
+            erc721Locks[account].remove(true, collections[i], 0);
+        }
+    }
+
+    /// @inheritdoc IColdStoragePlugin
+    function unlockERC721Token(address account, ERC721Token[] calldata tokens) external {
+        require(storageKeys[account] == msg.sender, "Must use storage key to unlock");
+        for (uint256 i = 0; i < tokens.length; ++i) {
+            erc721Locks[account].remove(false, tokens[i].contractAddress, tokens[i].tokenId);
         }
     }
 
@@ -178,10 +195,20 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
     /// @inheritdoc BasePlugin
-    function _onInstall(bytes calldata data) internal override isNotInitialized(msg.sender) {}
+    function _onInstall(bytes calldata data) internal override isNotInitialized(msg.sender) {
+        address storageKey = abi.decode(data, (address));
+        storageKeys[msg.sender] = storageKey;
+    }
 
     /// @inheritdoc BasePlugin
-    function onUninstall(bytes calldata) external override {}
+    function onUninstall(bytes calldata) external override {
+        uint256 totalLocks = erc721Locks[msg.sender].length();
+        for (uint256 i = totalLocks - 1; i >= 0; ++i) { // Do the check in reverse to avoid index issues with removal
+            ERC721LockMapLib.ERC721Lock memory lock = erc721Locks[msg.sender].at(i);
+            require(lock.lockEndTime <= block.timestamp);
+            erc721Locks[msg.sender].remove(lock.isCollectionLock, lock.contractAddress, lock.tokenId);
+        }
+    }
 
     /// @inheritdoc BasePlugin
     function preExecutionHook(uint8 functionId, address, /* sender */ uint256, /* value */ bytes calldata data)
@@ -264,13 +291,15 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
         manifest.dependencyInterfaceIds[_MANIFEST_DEPENDENCY_INDEX_OWNER_USER_OP_VALIDATION] =
             type(IPlugin).interfaceId;
 
-        manifest.executionFunctions = new bytes4[](6);
+        manifest.executionFunctions = new bytes4[](8);
         manifest.executionFunctions[0] = this.executeWithStorageKey.selector;
-        manifest.executionFunctions[1] = this.addOrReplaceStorageKey.selector;
-        manifest.executionFunctions[2] = this.removeStorageKey.selector;
-        manifest.executionFunctions[3] = this.lockERC721All.selector;
-        manifest.executionFunctions[4] = this.lockERC721Collection.selector;
-        manifest.executionFunctions[5] = this.lockERC721Token.selector;
+        manifest.executionFunctions[1] = this.changeStorageKey.selector;
+        manifest.executionFunctions[2] = this.lockERC721All.selector;
+        manifest.executionFunctions[3] = this.lockERC721Collection.selector;
+        manifest.executionFunctions[4] = this.lockERC721Token.selector;
+        manifest.executionFunctions[5] = this.unlockERC721All.selector;
+        manifest.executionFunctions[6] = this.unlockERC721Collection.selector;
+        manifest.executionFunctions[7] = this.unlockERC721Token.selector;
 
         ManifestFunction memory storageKeyUserOpValidationFunction = ManifestFunction({
             functionType: ManifestAssociatedFunctionType.SELF,
@@ -283,30 +312,38 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
             dependencyIndex: _MANIFEST_DEPENDENCY_INDEX_OWNER_USER_OP_VALIDATION
         });
 
-        manifest.userOpValidationFunctions = new ManifestAssociatedFunction[](6);
+        manifest.userOpValidationFunctions = new ManifestAssociatedFunction[](8);
         manifest.userOpValidationFunctions[0] = ManifestAssociatedFunction({
             executionSelector: this.executeWithStorageKey.selector,
             associatedFunction: storageKeyUserOpValidationFunction
         });
         manifest.userOpValidationFunctions[1] = ManifestAssociatedFunction({
-            executionSelector: this.addOrReplaceStorageKey.selector,
+            executionSelector: this.changeStorageKey.selector,
             associatedFunction: ownerUserOpValidationFunction
         });
         manifest.userOpValidationFunctions[2] = ManifestAssociatedFunction({
-            executionSelector: this.removeStorageKey.selector,
-            associatedFunction: ownerUserOpValidationFunction
-        });
-        manifest.userOpValidationFunctions[3] = ManifestAssociatedFunction({
             executionSelector: this.lockERC721All.selector,
             associatedFunction: ownerUserOpValidationFunction
         });
-        manifest.userOpValidationFunctions[4] = ManifestAssociatedFunction({
+        manifest.userOpValidationFunctions[3] = ManifestAssociatedFunction({
             executionSelector: this.lockERC721Collection.selector,
             associatedFunction: ownerUserOpValidationFunction
         });
-        manifest.userOpValidationFunctions[5] = ManifestAssociatedFunction({
+        manifest.userOpValidationFunctions[4] = ManifestAssociatedFunction({
             executionSelector: this.lockERC721Token.selector,
             associatedFunction: ownerUserOpValidationFunction
+        });
+        manifest.userOpValidationFunctions[5] = ManifestAssociatedFunction({
+            executionSelector: this.unlockERC721All.selector,
+            associatedFunction: storageKeyUserOpValidationFunction
+        });
+        manifest.userOpValidationFunctions[6] = ManifestAssociatedFunction({
+            executionSelector: this.unlockERC721Collection.selector,
+            associatedFunction: storageKeyUserOpValidationFunction
+        });
+        manifest.userOpValidationFunctions[7] = ManifestAssociatedFunction({
+            executionSelector: this.unlockERC721Token.selector,
+            associatedFunction: storageKeyUserOpValidationFunction
         });
 
         ManifestFunction memory storageKeyRuntimeValidationFunction = ManifestFunction({
@@ -320,30 +357,38 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
             dependencyIndex: _MANIFEST_DEPENDENCY_INDEX_OWNER_RUNTIME_VALIDATION
         });
 
-        manifest.runtimeValidationFunctions = new ManifestAssociatedFunction[](6);
+        manifest.runtimeValidationFunctions = new ManifestAssociatedFunction[](8);
         manifest.runtimeValidationFunctions[0] = ManifestAssociatedFunction({
             executionSelector: this.executeWithStorageKey.selector,
             associatedFunction: storageKeyRuntimeValidationFunction
         });
         manifest.runtimeValidationFunctions[1] = ManifestAssociatedFunction({
-            executionSelector: this.addOrReplaceStorageKey.selector,
+            executionSelector: this.changeStorageKey.selector,
             associatedFunction: ownerRuntimeValidationFunction
         });
         manifest.runtimeValidationFunctions[2] = ManifestAssociatedFunction({
-            executionSelector: this.removeStorageKey.selector,
-            associatedFunction: ownerRuntimeValidationFunction
-        });
-        manifest.runtimeValidationFunctions[3] = ManifestAssociatedFunction({
             executionSelector: this.lockERC721All.selector,
             associatedFunction: ownerRuntimeValidationFunction
         });
-        manifest.runtimeValidationFunctions[4] = ManifestAssociatedFunction({
+        manifest.runtimeValidationFunctions[3] = ManifestAssociatedFunction({
             executionSelector: this.lockERC721Collection.selector,
             associatedFunction: ownerRuntimeValidationFunction
         });
-        manifest.runtimeValidationFunctions[5] = ManifestAssociatedFunction({
+        manifest.runtimeValidationFunctions[4] = ManifestAssociatedFunction({
             executionSelector: this.lockERC721Token.selector,
             associatedFunction: ownerRuntimeValidationFunction
+        });
+        manifest.runtimeValidationFunctions[5] = ManifestAssociatedFunction({
+            executionSelector: this.unlockERC721All.selector,
+            associatedFunction: storageKeyRuntimeValidationFunction
+        });
+        manifest.runtimeValidationFunctions[6] = ManifestAssociatedFunction({
+            executionSelector: this.unlockERC721Collection.selector,
+            associatedFunction: storageKeyRuntimeValidationFunction
+        });        
+        manifest.runtimeValidationFunctions[7] = ManifestAssociatedFunction({
+            executionSelector: this.unlockERC721Token.selector,
+            associatedFunction: storageKeyRuntimeValidationFunction
         });
 
         ManifestFunction memory preExecHook = ManifestFunction({
