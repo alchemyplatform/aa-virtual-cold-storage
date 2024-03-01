@@ -39,7 +39,10 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     bytes4 constant EXECUTE = 0xb61d27f6;
 
     /// @inheritdoc IColdStoragePlugin
-    function executeWithStorageKey(Call[] calldata calls, address storageKey) external returns (bytes[] memory) {
+    function executeWithStorageKey(Call[] calldata calls, address /* storageKey */ )
+        external
+        returns (bytes[] memory)
+    {
         uint256 callsLength = calls.length;
         bytes[] memory results = new bytes[](callsLength);
 
@@ -147,6 +150,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     /// @inheritdoc BasePlugin
     function preExecutionHook(uint8 functionId, address, /* sender */ uint256, /* value */ bytes calldata data)
         external
+        view
         override
         returns (bytes memory)
     {
@@ -160,7 +164,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
                 abi.decode(data[4:], (address, uint256, bytes));
             validateExecution(executeTarget, executeData);
         } else if (selector == IStandardExecutor.executeBatch.selector) {
-            (Call[] memory calls) = abi.decode(data[4:], Call[]);
+            (Call[] memory calls) = abi.decode(data[4:], (Call[]));
             for (uint256 i = 0; i < calls.length; i++) {
                 Call memory call = calls[i];
                 validateExecution(call.target, call.data);
@@ -181,17 +185,17 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
 
         // check if there is an NFT transfer
         if (selector == IERC721.approve.selector) {
-            (address to, uint256 tokenId) = abi.decode(toDecode, (address, uint256));
+            ( /* address to */ , uint256 tokenId) = abi.decode(toDecode, (address, uint256));
             require(erc721TokenLocks[msg.sender][target][tokenId] <= block.timestamp, "ERC721 collection locked");
         } else if (selector == SAFE_TRANSFER_FROM) {
-            (address from, address to, uint256 tokenId) = abi.decode(toDecode, (address, address, uint256));
+            (address from, /* address to */, uint256 tokenId) = abi.decode(toDecode, (address, address, uint256));
             if (from == msg.sender) {
                 require(
                     erc721TokenLocks[msg.sender][target][tokenId] <= block.timestamp, "ERC721 collection locked"
                 );
             }
         } else if (selector == SAFE_TRANSFER_FROM_WITH_DATA) {
-            (address from, address to, uint256 tokenId, bytes memory transferData) =
+            (address from, /* address to */, uint256 tokenId, /* bytes memory transferData */ ) =
                 abi.decode(toDecode, (address, address, uint256, bytes));
             if (from == msg.sender) {
                 require(
@@ -200,7 +204,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
             }
         } else {
             // TRANSFER_FROM
-            (address from, address to, uint256 tokenId) = abi.decode(toDecode, (address, address, uint256));
+            (address from, /* address to */, uint256 tokenId) = abi.decode(toDecode, (address, address, uint256));
             if (from == msg.sender) {
                 require(
                     erc721TokenLocks[msg.sender][target][tokenId] <= block.timestamp, "ERC721 collection locked"
@@ -324,7 +328,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
             postExecHook: postExecHook
         });
         manifest.executionHooks[2] = ManifestExecutionHook({
-            executionSelector: IStandardExecutor.executeFromPluginExternal.selector,
+            executionSelector: IPluginExecutor.executeFromPluginExternal.selector,
             preExecHook: preExecHook,
             postExecHook: postExecHook
         });
@@ -351,7 +355,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
         return interfaceId == type(IColdStoragePlugin).interfaceId || super.supportsInterface(interfaceId);
     }
 
-    function isErc721LockedFunction(bytes4 selector) internal returns (bool) {
+    function isErc721LockedFunction(bytes4 selector) internal pure returns (bool) {
         return selector == IERC721.approve.selector || selector == SAFE_TRANSFER_FROM
             || selector == SAFE_TRANSFER_FROM_WITH_DATA || selector == IERC721.transferFrom.selector;
     }
