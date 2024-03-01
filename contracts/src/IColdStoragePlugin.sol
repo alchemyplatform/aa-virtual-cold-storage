@@ -96,6 +96,17 @@ interface IColdStoragePlugin {
     /// @return The addresses of the owners of the account.
     function storageKeyOf(address account) external view returns (address);
 
+    /// @notice Determine if a particular ERC721 token is locked, which can be because it is individually locked,
+    /// because its collection is locked, or because all ERC721 tokens are locked.
+    /// @param account The account on which to check if the token is locked.
+    /// @param collection The ERC721 contract address.
+    /// @param tokenId The ERC721 token id.
+    /// @return true if the token is locked.
+    function isERC721TokenLocked(address account, address collection, uint256 tokenId)
+        external
+        view
+        returns (bool);
+
     /// @notice Returns all the active locks for the account.
     /// @param account SCA to get all the locks for
     /// @return allDuration The duration of the lock on all ERC721 tokens, 0 if there is no lock
