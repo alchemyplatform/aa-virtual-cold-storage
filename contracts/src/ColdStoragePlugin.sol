@@ -5,9 +5,8 @@ import {BasePlugin} from "modular-account/plugins/BasePlugin.sol";
 import {PluginManifest, PluginMetadata} from "modular-account/interfaces/IPlugin.sol";
 import {IColdStoragePlugin} from "./IColdStoragePlugin.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import {Call} from "modular-account/interfaces/IStandardExecutor.sol";
+import {Call, IStandardExecutor} from "modular-account/interfaces/IStandardExecutor.sol";
 import {IPluginExecutor} from "modular-account/interfaces/IPluginExecutor.sol";
-import {IStandardExecutor} from "modular-account/interfaces/IStandardExecutor.sol";
 import {
     IPlugin,
     ManifestFunction,
@@ -134,43 +133,49 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     function onUninstall(bytes calldata) external override {}
 
     /// @inheritdoc BasePlugin
-    function preExecutionHook(uint8 functionId, address sender, uint256 value, bytes calldata data)
+    function preExecutionHook(uint8 functionId, address, /* sender */ uint256, /* value */ bytes calldata data)
         external
         override
         returns (bytes memory)
     {
         require(functionId == uint8(FunctionId.EXECUTE_PRE_EXEC_HOOK), "Not a supported function id");
-
         bytes4 selector = bytes4(data);
-
-        if (selector != EXECUTE) {
-            return bytes("");
+        if (
+            selector == IStandardExecutor.execute.selector
+                || selector == IPluginExecutor.executeFromPluginExternal.selector
+        ) {
+            (address executeTarget, /* uint256 executeValue */, bytes memory executeData) =
+                abi.decode(data[4:], (address, uint256, bytes));
+            validateExecution(executeTarget, executeData);
+        } else if (selector == IStandardExecutor.executeBatch.selector) {
+            (Call[] memory calls) = abi.decode(data[4:], Call[]);
+            for (uint256 i = 0; i < calls.length; i++) {
+                Call memory call = calls[i];
+                validateExecution(call.target, call.data);
+            }
         }
+        return bytes("");
+    }
 
-        (address executeTarget, uint256 executeValue, bytes memory executeData) =
-            abi.decode(data[4:], (address, uint256, bytes));
-
-        bytes4 executeSelector = bytes4(executeData);
-        if (!isErc721LockedFunction(executeSelector)) {
-            return bytes("");
+    function validateExecution(address target, bytes memory data) internal view {
+        bytes4 selector = bytes4(data);
+        if (!isErc721LockedFunction(selector)) {
+            return;
         }
         require(erc721AllLocks[msg.sender] <= block.timestamp, "ERC721 locked");
-        require(erc721CollectionLocks[msg.sender][executeTarget] <= block.timestamp, "ERC721 collection locked");
+        require(erc721CollectionLocks[msg.sender][target] <= block.timestamp, "ERC721 collection locked");
 
-        bytes memory toDecode = this.removeSelector(executeData);
+        bytes memory toDecode = this.removeSelector(data);
 
         // check if there is an NFT transfer
         if (selector == IERC721.approve.selector) {
             (address to, uint256 tokenId) = abi.decode(toDecode, (address, uint256));
-            require(
-                erc721TokenLocks[msg.sender][executeTarget][tokenId] <= block.timestamp, "ERC721 collection locked"
-            );
+            require(erc721TokenLocks[msg.sender][target][tokenId] <= block.timestamp, "ERC721 collection locked");
         } else if (selector == SAFE_TRANSFER_FROM) {
             (address from, address to, uint256 tokenId) = abi.decode(toDecode, (address, address, uint256));
             if (from == msg.sender) {
                 require(
-                    erc721TokenLocks[msg.sender][executeTarget][tokenId] <= block.timestamp,
-                    "ERC721 collection locked"
+                    erc721TokenLocks[msg.sender][target][tokenId] <= block.timestamp, "ERC721 collection locked"
                 );
             }
         } else if (selector == SAFE_TRANSFER_FROM_WITH_DATA) {
@@ -178,8 +183,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
                 abi.decode(toDecode, (address, address, uint256, bytes));
             if (from == msg.sender) {
                 require(
-                    erc721TokenLocks[msg.sender][executeTarget][tokenId] <= block.timestamp,
-                    "ERC721 collection locked"
+                    erc721TokenLocks[msg.sender][target][tokenId] <= block.timestamp, "ERC721 collection locked"
                 );
             }
         } else {
@@ -187,12 +191,10 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
             (address from, address to, uint256 tokenId) = abi.decode(toDecode, (address, address, uint256));
             if (from == msg.sender) {
                 require(
-                    erc721TokenLocks[msg.sender][executeTarget][tokenId] <= block.timestamp,
-                    "ERC721 collection locked"
+                    erc721TokenLocks[msg.sender][target][tokenId] <= block.timestamp, "ERC721 collection locked"
                 );
             }
         }
-        return bytes("");
     }
 
     /// @inheritdoc BasePlugin
@@ -287,19 +289,32 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
             associatedFunction: ownerRuntimeValidationFunction
         });
 
-        manifest.executionHooks = new ManifestExecutionHook[](1);
+        ManifestFunction memory preExecHook = ManifestFunction({
+            functionType: ManifestAssociatedFunctionType.SELF,
+            functionId: uint8(FunctionId.EXECUTE_PRE_EXEC_HOOK),
+            dependencyIndex: 0 // Unused.
+        });
+        ManifestFunction memory postExecHook = ManifestFunction({
+            functionType: ManifestAssociatedFunctionType.NONE,
+            functionId: 0, // Unused.
+            dependencyIndex: 0 // Unused.
+        });
+
+        manifest.executionHooks = new ManifestExecutionHook[](3);
         manifest.executionHooks[0] = ManifestExecutionHook({
             executionSelector: IStandardExecutor.execute.selector,
-            preExecHook: ManifestFunction({
-                functionType: ManifestAssociatedFunctionType.SELF,
-                functionId: uint8(FunctionId.EXECUTE_PRE_EXEC_HOOK),
-                dependencyIndex: 0 // Unused.
-            }),
-            postExecHook: ManifestFunction({
-                functionType: ManifestAssociatedFunctionType.NONE,
-                functionId: 0, // Unused.
-                dependencyIndex: 0 // Unused.
-            })
+            preExecHook: preExecHook,
+            postExecHook: postExecHook
+        });
+        manifest.executionHooks[1] = ManifestExecutionHook({
+            executionSelector: IStandardExecutor.executeBatch.selector,
+            preExecHook: preExecHook,
+            postExecHook: postExecHook
+        });
+        manifest.executionHooks[2] = ManifestExecutionHook({
+            executionSelector: IStandardExecutor.executeFromPluginExternal.selector,
+            preExecHook: preExecHook,
+            postExecHook: postExecHook
         });
 
         return manifest;
