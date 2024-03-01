@@ -19,7 +19,8 @@ contract DeployColdStorage is Script {
     ) internal {
         vm.startBroadcast(privateKey);
         address plugin = _deployColdStoragePlugin();
-        address freeNft = _deployFreelyMintableNft();
+        address freeNft1 = _deployFreelyMintableNft("Free NFT (dark)", "FREEd", "#182026");
+        address freeNft2 = _deployFreelyMintableNft("Free NFT (light)", "FREEl", "#FDF6E3");
         address devPaymaster;
         if (deployDevPaymaster) {
             devPaymaster = _deployDevPaymaster();
@@ -36,7 +37,10 @@ contract DeployColdStorage is Script {
             )
         );
         vm.writeLine(
-            path, string.concat("export const ", variablePrefix, '_NFT_ADDRESS = "', vm.toString(freeNft), '";')
+            path, string.concat("export const ", variablePrefix, '_NFT1_ADDRESS = "', vm.toString(freeNft1), '";')
+        );
+        vm.writeLine(
+            path, string.concat("export const ", variablePrefix, '_NFT2_ADDRESS = "', vm.toString(freeNft2), '";')
         );
         if (deployDevPaymaster) {
             vm.writeLine(
@@ -47,7 +51,8 @@ contract DeployColdStorage is Script {
             );
         }
         console2.log("ColdStoragePlugin: %s", plugin);
-        console2.log("FreelyMintableNft: %s", freeNft);
+        console2.log("FreelyMintableNftDark: %s", freeNft1);
+        console2.log("FreelyMintableNftLight: %s", freeNft2);
         if (deployDevPaymaster) {
             console2.log("DevPaymaster: %s", devPaymaster);
         }
@@ -68,16 +73,21 @@ contract DeployColdStorage is Script {
         return plugin;
     }
 
-    function _deployFreelyMintableNft() private returns (address) {
+    function _deployFreelyMintableNft(string memory name, string memory symbol, string memory backgroundColor)
+        private
+        returns (address)
+    {
         address addr = Create2.computeAddress(
             bytes32(0),
-            keccak256(abi.encodePacked(type(FreelyMintableNft).creationCode, abi.encode())),
+            keccak256(
+                abi.encodePacked(type(FreelyMintableNft).creationCode, abi.encode(name, symbol, backgroundColor))
+            ),
             CREATE2_FACTORY
         );
         if (addr.code.length > 0) {
             return addr;
         }
-        address nft = address(new FreelyMintableNft{salt: 0}());
+        address nft = address(new FreelyMintableNft{salt: 0}(name, symbol, backgroundColor));
         require(nft == addr, "NFT address did not match predicted");
         return nft;
     }

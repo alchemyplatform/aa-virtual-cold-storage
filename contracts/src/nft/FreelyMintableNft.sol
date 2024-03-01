@@ -11,7 +11,13 @@ contract FreelyMintableNft is ERC721Enumerable {
     using Strings for uint256;
     using DataURIs for string;
 
-    constructor() ERC721("Free Courage", "FREE") {}
+    string private _backgroundColor;
+    uint256 private immutable _seedOffset;
+
+    constructor(string memory name, string memory symbol, string memory backgroundColor) ERC721(name, symbol) {
+        _backgroundColor = backgroundColor;
+        _seedOffset = uint256(keccak256(abi.encode(name, symbol, backgroundColor)));
+    }
 
     function mint(address to, uint256 quantity) external {
         for (uint256 i = 0; i < quantity; i++) {
@@ -29,15 +35,17 @@ contract FreelyMintableNft is ERC721Enumerable {
         return _generateJson(tokenId).toJsonURI();
     }
 
-    function _generateJson(uint256 tokenId) private pure returns (string memory) {
+    function _generateJson(uint256 tokenId) private view returns (string memory) {
         string memory tokenIdString = tokenId.toString();
-        uint256 scrambledTokenId = uint256(keccak256(abi.encodePacked(tokenId)));
+        uint256 scrambledTokenId = uint256(keccak256(abi.encodePacked(tokenId))) ^ _seedOffset;
         return string(
             abi.encodePacked(
-                "{\n" '  "name": "Free NFT #',
+                "{\n" '  "name": "',
+                name(),
+                " #",
                 tokenIdString,
                 '",\n' '  "description": "A free NFT with unique art. Do with it as you will.",' '  "image": "',
-                CourageSvgs.generateSvg(scrambledTokenId).toSvgURI(),
+                CourageSvgs.generateSvg(_backgroundColor, scrambledTokenId).toSvgURI(),
                 '"\n' "}\n"
             )
         );

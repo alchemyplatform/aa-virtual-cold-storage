@@ -14,7 +14,7 @@ library CourageSvgs {
         string fill;
     }
 
-    function generateSvg(uint256 tokenId) internal pure returns (string memory) {
+    function generateSvg(string memory backgroundColor, uint256 tokenId) internal pure returns (string memory) {
         return string(
             abi.encodePacked(
                 '<svg width="350" height="350" viewbox="0 0 350 350" xmlns="http://www.w3.org/2000/svg">\n'
@@ -24,7 +24,9 @@ library CourageSvgs {
                 '    <feGaussianBlur stdDeviation="5" />\n' '    <feComponentTransfer result="glow1">\n'
                 '      <feFuncA type="linear" slope="4" intercept="0" />\n' "    </feComponentTransfer>\n"
                 "    <feMerge>\n" '      <feMergeNode in="glow1" />\n' '      <feMergeNode in="SourceGraphic" />\n'
-                "    </feMerge>\n" "  </filter>\n" '  <rect width="100%" height="100%" fill="#182026" />\n',
+                "    </feMerge>\n" "  </filter>\n" '  <rect width="100%" height="100%" fill="',
+                backgroundColor,
+                '" />\n',
                 generateCircles(tokenId),
                 "</svg>\n"
             )

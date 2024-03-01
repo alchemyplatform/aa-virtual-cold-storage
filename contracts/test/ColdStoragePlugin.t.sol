@@ -9,7 +9,7 @@ import {MultiOwnerModularAccountFactory} from "modular-account/factory/MultiOwne
 import {FunctionReference} from "modular-account/interfaces/IPluginManager.sol";
 import {IEntryPoint} from "modular-account/interfaces/erc4337/IEntryPoint.sol";
 import {EntryPoint} from "@eth-infinitism/account-abstraction/core/EntryPoint.sol";
-import {FreelyMintableNft} from "../src/nft/FreelyMintableNft.sol"; 
+import {FreelyMintableNft} from "../src/nft/FreelyMintableNft.sol";
 import {FunctionReferenceLib} from "modular-account/helpers/FunctionReferenceLib.sol";
 import {IMultiOwnerPlugin} from "modular-account/plugins/owner/IMultiOwnerPlugin.sol";
 
@@ -63,9 +63,9 @@ contract ColdStoragePluginTest is Test {
             pluginInstallData: abi.encode(),
             dependencies: dependencies
         });
-        
+
         // Create a NFT contract to test
-        nft = new FreelyMintableNft();
+        nft = new FreelyMintableNft("Free NFT", "FREE", "#000000");
     }
 
     function testPreExecutionHook() public {
@@ -75,16 +75,27 @@ contract ColdStoragePluginTest is Test {
         ColdStoragePlugin(address(_account)).lockERC721All(100);
 
         // console2.log("%s, %s", _account, _owner);
-        // _account.execute(address(coldStoragePlugin), 0, abi.encodeWithSelector(ColdStoragePlugin.lockERC721All.selector, 100));
+        // _account.execute(address(coldStoragePlugin), 0,
+        // abi.encodeWithSelector(ColdStoragePlugin.lockERC721All.selector, 100));
         // Try to transfer the NFT
 
-            // error RuntimeValidationFunctionReverted(address plugin, uint8 functionId, bytes revertReason);
+        // error RuntimeValidationFunctionReverted(address plugin, uint8 functionId, bytes revertReason);
 
         // // vm.expectRevert("Existing lock in place");
-        
-        // vm.expectRevert(abi.encodeWithSelector(UpgradeableModularAccount.RuntimeValidationFunctionReverted.selector, address(_multiOwnerPlugin), uint8(0), "Existing lock in place"));
-        vm.expectRevert(abi.encodeWithSelector(UpgradeableModularAccount.PreExecHookReverted.selector, address(coldStoragePlugin), 1, abi.encodeWithSelector(0x08c379a0, "ERC721 locked")));
+
+        // vm.expectRevert(abi.encodeWithSelector(UpgradeableModularAccount.RuntimeValidationFunctionReverted.selector,
+        // address(_multiOwnerPlugin), uint8(0), "Existing lock in place"));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                UpgradeableModularAccount.PreExecHookReverted.selector,
+                address(coldStoragePlugin),
+                1,
+                abi.encodeWithSelector(0x08c379a0, "ERC721 locked")
+            )
+        );
         vm.prank(_owner);
-        _account.execute(address(nft), 0, abi.encodeWithSelector(0x42842e0e, address(_account), address(uint160(1)), 0));
+        _account.execute(
+            address(nft), 0, abi.encodeWithSelector(0x42842e0e, address(_account), address(uint160(1)), 0)
+        );
     }
 }
