@@ -20,7 +20,7 @@ library ERC721LockMapLib {
 
     function set(ERC721LockMap storage map, bool isCollectionLock, address contractAddress, uint256 tokenId, uint256 lockEndTime) internal {
         bytes32 key = keccak256(abi.encodePacked(isCollectionLock, contractAddress, tokenId));
-        EnumerableSet.add(map._hashedKeys, key);
+        map._hashedKeys.add(key);
         map._keysToLocks[key] = ERC721Lock({isCollectionLock: isCollectionLock, contractAddress: contractAddress, tokenId: tokenId, lockEndTime: lockEndTime});
     }
 
@@ -30,21 +30,21 @@ library ERC721LockMapLib {
     }
 
     function length(ERC721LockMap storage map) internal view returns (uint256) {
-        return EnumerableSet.length(map._hashedKeys);
+        return map._hashedKeys.length();
     }
 
     function at(ERC721LockMap storage map, uint256 index) internal view returns (ERC721Lock memory) {
-        return map._keysToLocks[EnumerableSet.at(map._hashedKeys, index)];
+        return map._keysToLocks[map._hashedKeys.at(index)];
     }
 
     function remove(ERC721LockMap storage map, bool isCollectionLock, address contractAddress, uint256 tokenId) internal {
         bytes32 key = keccak256(abi.encodePacked(isCollectionLock, contractAddress, tokenId));
-        EnumerableSet.remove(map._hashedKeys, key);
+        map._hashedKeys.remove(key);
         delete map._keysToLocks[key];
     }
 
     function contains(ERC721LockMap storage map, bool isCollectionLock, address contractAddress, uint256 tokenId) internal view returns (bool) {
         bytes32 key = keccak256(abi.encodePacked(isCollectionLock, contractAddress, tokenId));
-        return EnumerableSet.contains(map._hashedKeys, key);
+        return map._hashedKeys.contains(key);
     }
 }
