@@ -114,6 +114,18 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
         return storageKeys[account];
     }
 
+    /// @inheritdoc IColdStoragePlugin
+    function isERC721TokenLocked(address account, address collection, uint256 tokenId)
+        external
+        view
+        override
+        returns (bool)
+    {
+        return erc721AllLocks[account] > block.timestamp
+            || erc721CollectionLocks[account][collection] > block.timestamp
+            || erc721TokenLocks[account][collection][tokenId] > block.timestamp;
+    }
+
     // /// @inheritdoc IColdStoragePlugin
     // function getERC721Locks(address account) external view returns (uint256 allDuration, ERC721CollectionLock[]
     // memory collectionLocks, ERC721TokenLock[] memory tokenLocks) {
