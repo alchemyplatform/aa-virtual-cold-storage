@@ -60,7 +60,7 @@ contract ColdStoragePluginTest is Test {
         _account.installPlugin({
             plugin: address(coldStoragePlugin),
             manifestHash: manifestHash,
-            pluginInstallData: abi.encode(),
+            pluginInstallData: abi.encode(address(_owner)),
             dependencies: dependencies
         });
 
