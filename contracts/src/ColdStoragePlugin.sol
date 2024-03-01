@@ -128,14 +128,50 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
             || erc721Locks[msg.sender].get(false, collection, tokenId).lockEndTime > block.timestamp;
     }
 
-    // /// @inheritdoc IColdStoragePlugin
-    // function getERC721Locks(address account) external view returns (uint256 allDuration, ERC721CollectionLock[]
-    // memory collectionLocks, ERC721TokenLock[] memory tokenLocks) {
-    //     allDuration = erc721AllLocks[account];
-    //     collectionLocks = erc721CollectionLocks[account];
-    //     tokenLocks = erc721TokenLocks[account];
-    //     return (allDuration, collectionLocks, tokenLocks);
-    // }
+    /// @inheritdoc IColdStoragePlugin
+    function getERC721Locks(address account) external view returns (uint48 allDuration, ERC721CollectionLock[]
+    memory collectionLocks, ERC721TokenLock[] memory tokenLocks) {
+        uint256 totalLocks = ERC721LockMapLib.length(erc721Locks[account]);
+        ERC721CollectionLock[] memory tempCollectionLocks = new ERC721CollectionLock[](totalLocks);
+        ERC721TokenLock[] memory tempTokenLocks = new ERC721TokenLock[](totalLocks);
+        uint256 collectionIndex = 0;
+        uint256 tokenIndex = 0;
+
+        for (uint256 i = 0; i < totalLocks; ++i) {
+            ERC721LockMapLib.ERC721Lock memory lock = ERC721LockMapLib.at(erc721Locks[account], i);
+            uint256 lockDuration = lock.lockEndTime > block.timestamp ? lock.lockEndTime - block.timestamp : 0;
+            if (lockDuration == 0) continue; // ignore expired locks
+
+            if (lock.isCollectionLock) {
+                tempCollectionLocks[collectionIndex] = ERC721CollectionLock({
+                    contractAddress: lock.contractAddress,
+                    duration: uint48(lockDuration)
+                });
+                collectionIndex++;
+            } else {
+                tempTokenLocks[tokenIndex] = ERC721TokenLock({
+                    token: ERC721Token({
+                        contractAddress: lock.contractAddress,
+                        tokenId: lock.tokenId
+                    }),
+                    duration: uint48(lockDuration)
+                });
+                tokenIndex++;
+            }
+        }
+
+        allDuration = erc721AllLocks[account] > block.timestamp ? uint48(erc721AllLocks[account] - block.timestamp) : 0;
+
+        collectionLocks = new ERC721CollectionLock[](collectionIndex);
+        for (uint256 i = 0; i < collectionIndex; ++i) {
+            collectionLocks[i] = tempCollectionLocks[i];
+        }
+
+        tokenLocks = new ERC721TokenLock[](tokenIndex);
+        for (uint256 i = 0; i < tokenIndex; ++i) {
+            tokenLocks[i] = tempTokenLocks[i];
+        }
+    }
 
     // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
     // ┃    Plugin interface functions    ┃
