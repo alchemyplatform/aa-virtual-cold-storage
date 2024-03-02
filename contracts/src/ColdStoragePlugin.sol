@@ -39,7 +39,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     bytes4 constant SAFE_TRANSFER_FROM_WITH_DATA = 0xb88d4fde;
 
     /// @inheritdoc IColdStoragePlugin
-    function executeWithStorageKey(Call[] calldata calls, address /* storageKey */ )
+    function executeWithStorageKey(Call[] calldata calls)
         external
         returns (bytes[] memory)
     {
@@ -63,7 +63,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     }
 
     /// @inheritdoc IColdStoragePlugin
-    function changeStorageKey(address account, address storageKey) external {
+    function changeStorageKey(address storageKey) external {
         storageKeys[account] = storageKey;
     }
 

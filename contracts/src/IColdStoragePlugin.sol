@@ -56,11 +56,11 @@ interface IColdStoragePlugin {
     /// @param calls The array of calls to be performed.
     /// @param storageKey The storage key to be used for the execution.
     /// @return The array of return data from the executions.
-    function executeWithStorageKey(Call[] calldata calls, address storageKey) external returns (bytes[] memory);
+    function executeWithStorageKey(Call[] calldata calls) external returns (bytes[] memory);
 
     /// @notice Replace a storage key for the sender.
     /// @param storageKey The storage key replace the current key with.
-    function changeStorageKey(address account, address storageKey) external;
+    function changeStorageKey(address storageKey) external;
 
     /// @notice Place all ERC721 tokens in cold storage.
     /// @param duration how long to lock the tokens for.
