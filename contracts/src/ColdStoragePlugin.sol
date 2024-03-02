@@ -225,7 +225,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     }
 
     /// @inheritdoc BasePlugin
-    function preExecutionHook(uint8 functionId, address, /* sender */ uint256, /* value */ bytes calldata data)
+    function preExecutionHook(uint8 functionId, address sender, uint256 /* value */, bytes calldata data)
         external
         view
         override
@@ -237,6 +237,9 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
             selector == IStandardExecutor.execute.selector
                 || selector == IPluginExecutor.executeFromPluginExternal.selector
         ) {
+            if (sender == address(this)) { // Allow for any executeFromPluginExternal calls from the plugin itself since it has already passed validation
+                return bytes("");
+            }
             (address executeTarget, /* uint256 executeValue */, bytes memory executeData) =
                 abi.decode(data[4:], (address, uint256, bytes));
             validateExecution(executeTarget, executeData);
@@ -255,6 +258,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
         if (!isErc721LockedFunction(selector)) {
             return;
         }
+
         require(erc721AllLocks[msg.sender] <= block.timestamp, "ERC721 locked");
         require(
             erc721Locks[msg.sender].get(true, target, 0).lockEndTime <= block.timestamp, "ERC721 collection locked"
@@ -435,6 +439,8 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
             preExecHook: preExecHook,
             postExecHook: postExecHook
         });
+
+        manifest.permitAnyExternalAddress = true;
 
         return manifest;
     }
