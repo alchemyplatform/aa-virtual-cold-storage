@@ -54,7 +54,6 @@ interface IColdStoragePlugin {
 
     /// @notice Execute transfers or approvals on locked assets with the cold storage key.
     /// @param calls The array of calls to be performed.
-    /// @param storageKey The storage key to be used for the execution.
     /// @return The array of return data from the executions.
     function executeWithStorageKey(Call[] calldata calls) external returns (bytes[] memory);
 
