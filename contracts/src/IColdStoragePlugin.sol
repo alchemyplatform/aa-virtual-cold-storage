@@ -6,6 +6,7 @@ import {Call} from "modular-account/interfaces/IStandardExecutor.sol";
 interface IColdStoragePlugin {
     enum FunctionId {
         USER_OP_VALIDATION_STORAGE_KEY,
+        RUNTIME_VALIDATION_STORAGE_KEY,
         EXECUTE_PRE_EXEC_HOOK
     }
 
@@ -53,16 +54,12 @@ interface IColdStoragePlugin {
 
     /// @notice Execute transfers or approvals on locked assets with the cold storage key.
     /// @param calls The array of calls to be performed.
-    /// @param storageKey The storage key to be used for the execution.
     /// @return The array of return data from the executions.
-    function executeWithStorageKey(Call[] calldata calls, address storageKey) external returns (bytes[] memory);
+    function executeWithStorageKey(Call[] calldata calls) external returns (bytes[] memory);
 
-    /// @notice Add or replace a storage key to the sender.
-    /// @param storageKey The storage key to add or replace.
-    function addOrReplaceStorageKey(address storageKey) external;
-
-    /// @notice Remove the sender's storage key.
-    function removeStorageKey() external;
+    /// @notice Replace a storage key for the sender.
+    /// @param storageKey The storage key replace the current key with.
+    function changeStorageKey(address storageKey) external;
 
     /// @notice Place all ERC721 tokens in cold storage.
     /// @param duration how long to lock the tokens for.
@@ -76,16 +73,16 @@ interface IColdStoragePlugin {
     /// @param locks The tokens and durations to lock.
     function lockERC721Token(ERC721TokenLock[] calldata locks) external;
 
-    // /// @notice Remove all locks on ERC721 tokens.
-    // function unlockERC721All() external;
+    /// @notice Remove all locks on ERC721 tokens.
+    function unlockERC721All() external;
 
-    // /// @notice Remove all locks on specific ERC721 collections.
-    // /// @param collections The collections to unlock.
-    // function unlockERC721Collection(address[] calldata collections) external;
+    /// @notice Remove all locks on specific ERC721 collections.
+    /// @param collections The collections to unlock.
+    function unlockERC721Collection(address[] calldata collections) external;
 
-    // /// @notice Remove locks on specific ERC721 tokens.
-    // /// @param tokens The tokens to unlock.
-    // function unlockERC721Token(ERC721Token[] calldata tokens) external;
+    /// @notice Remove locks on specific ERC721 tokens.
+    /// @param tokens The tokens to unlock.
+    function unlockERC721Token(ERC721Token[] calldata tokens) external;
 
     // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
     // ┃    Plugin only view functions    ┃

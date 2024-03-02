@@ -60,7 +60,7 @@ contract ColdStoragePluginTest is Test {
         _account.installPlugin({
             plugin: address(coldStoragePlugin),
             manifestHash: manifestHash,
-            pluginInstallData: abi.encode(),
+            pluginInstallData: abi.encode(address(_owner)),
             dependencies: dependencies
         });
 
@@ -68,7 +68,7 @@ contract ColdStoragePluginTest is Test {
         nft = new FreelyMintableNft("Free NFT", "FREE", "#000000");
     }
 
-    function testPreExecutionHook() public {
+    function testLockAll() public {
         nft.mint(address(_account), 1);
         nft.mint(address(_owner), 3);
         vm.prank(_owner);
@@ -89,7 +89,7 @@ contract ColdStoragePluginTest is Test {
             abi.encodeWithSelector(
                 UpgradeableModularAccount.PreExecHookReverted.selector,
                 address(coldStoragePlugin),
-                1,
+                2,
                 abi.encodeWithSelector(0x08c379a0, "ERC721 locked")
             )
         );
