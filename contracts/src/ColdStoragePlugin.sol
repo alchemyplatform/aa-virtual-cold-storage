@@ -329,7 +329,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
         });
         manifest.userOpValidationFunctions[1] = ManifestAssociatedFunction({
             executionSelector: this.changeStorageKey.selector,
-            associatedFunction: ownerUserOpValidationFunction
+            associatedFunction: storageKeyUserOpValidationFunction
         });
         manifest.userOpValidationFunctions[2] = ManifestAssociatedFunction({
             executionSelector: this.lockERC721All.selector,
@@ -374,7 +374,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
         });
         manifest.runtimeValidationFunctions[1] = ManifestAssociatedFunction({
             executionSelector: this.changeStorageKey.selector,
-            associatedFunction: ownerRuntimeValidationFunction
+            associatedFunction: storageKeyRuntimeValidationFunction
         });
         manifest.runtimeValidationFunctions[2] = ManifestAssociatedFunction({
             executionSelector: this.lockERC721All.selector,
