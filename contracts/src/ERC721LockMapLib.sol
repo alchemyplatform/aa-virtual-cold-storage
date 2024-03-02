@@ -18,13 +18,28 @@ library ERC721LockMapLib {
         mapping(bytes32 => ERC721Lock) _keysToLocks;
     }
 
-    function set(ERC721LockMap storage map, bool isCollectionLock, address contractAddress, uint256 tokenId, uint256 lockEndTime) internal {
+    function set(
+        ERC721LockMap storage map,
+        bool isCollectionLock,
+        address contractAddress,
+        uint256 tokenId,
+        uint256 lockEndTime
+    ) internal {
         bytes32 key = keccak256(abi.encodePacked(isCollectionLock, contractAddress, tokenId));
         map._hashedKeys.add(key);
-        map._keysToLocks[key] = ERC721Lock({isCollectionLock: isCollectionLock, contractAddress: contractAddress, tokenId: tokenId, lockEndTime: lockEndTime});
+        map._keysToLocks[key] = ERC721Lock({
+            isCollectionLock: isCollectionLock,
+            contractAddress: contractAddress,
+            tokenId: tokenId,
+            lockEndTime: lockEndTime
+        });
     }
 
-    function get(ERC721LockMap storage map, bool isCollectionLock, address contractAddress, uint256 tokenId) internal view returns (ERC721Lock memory) {
+    function get(ERC721LockMap storage map, bool isCollectionLock, address contractAddress, uint256 tokenId)
+        internal
+        view
+        returns (ERC721Lock memory)
+    {
         bytes32 key = keccak256(abi.encodePacked(isCollectionLock, contractAddress, tokenId));
         return map._keysToLocks[key];
     }
@@ -37,13 +52,19 @@ library ERC721LockMapLib {
         return map._keysToLocks[map._hashedKeys.at(index)];
     }
 
-    function remove(ERC721LockMap storage map, bool isCollectionLock, address contractAddress, uint256 tokenId) internal {
+    function remove(ERC721LockMap storage map, bool isCollectionLock, address contractAddress, uint256 tokenId)
+        internal
+    {
         bytes32 key = keccak256(abi.encodePacked(isCollectionLock, contractAddress, tokenId));
         map._hashedKeys.remove(key);
         delete map._keysToLocks[key];
     }
 
-    function contains(ERC721LockMap storage map, bool isCollectionLock, address contractAddress, uint256 tokenId) internal view returns (bool) {
+    function contains(ERC721LockMap storage map, bool isCollectionLock, address contractAddress, uint256 tokenId)
+        internal
+        view
+        returns (bool)
+    {
         bytes32 key = keccak256(abi.encodePacked(isCollectionLock, contractAddress, tokenId));
         return map._hashedKeys.contains(key);
     }

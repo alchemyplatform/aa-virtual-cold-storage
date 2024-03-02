@@ -39,10 +39,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     bytes4 constant SAFE_TRANSFER_FROM_WITH_DATA = 0xb88d4fde;
 
     /// @inheritdoc IColdStoragePlugin
-    function executeWithStorageKey(Call[] calldata calls)
-        external
-        returns (bytes[] memory)
-    {
+    function executeWithStorageKey(Call[] calldata calls) external returns (bytes[] memory) {
         uint256 callsLength = calls.length;
         bytes[] memory results = new bytes[](callsLength);
 
@@ -97,11 +94,14 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
             require(
                 erc721AllLocks[msg.sender] <= block.timestamp
                     && erc721Locks[msg.sender].get(true, lock.token.contractAddress, 0).lockEndTime <= block.timestamp
-                    && erc721Locks[msg.sender].get(false, lock.token.contractAddress, lock.token.tokenId).lockEndTime <= block.timestamp,
+                    && erc721Locks[msg.sender].get(false, lock.token.contractAddress, lock.token.tokenId).lockEndTime
+                        <= block.timestamp,
                 "Existing lock in place"
             );
 
-            erc721Locks[msg.sender].set(false, lock.token.contractAddress, lock.token.tokenId, block.timestamp + lock.duration);
+            erc721Locks[msg.sender].set(
+                false, lock.token.contractAddress, lock.token.tokenId, block.timestamp + lock.duration
+            );
         }
     }
 
@@ -120,7 +120,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     /// @inheritdoc IColdStoragePlugin
     function unlockERC721Token(ERC721Token[] calldata tokens) external {
         for (uint256 i = tokens.length; i > 0; --i) {
-            erc721Locks[msg.sender].remove(false, tokens[i - 1].contractAddress, tokens[i-1].tokenId);
+            erc721Locks[msg.sender].remove(false, tokens[i - 1].contractAddress, tokens[i - 1].tokenId);
         }
     }
 
@@ -142,8 +142,15 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     }
 
     /// @inheritdoc IColdStoragePlugin
-    function getERC721Locks(address account) external view returns (uint48 allDuration, ERC721CollectionLock[]
-    memory collectionLocks, ERC721TokenLock[] memory tokenLocks) {
+    function getERC721Locks(address account)
+        external
+        view
+        returns (
+            uint48 allDuration,
+            ERC721CollectionLock[] memory collectionLocks,
+            ERC721TokenLock[] memory tokenLocks
+        )
+    {
         uint256 totalLocks = ERC721LockMapLib.length(erc721Locks[account]);
         ERC721CollectionLock[] memory tempCollectionLocks = new ERC721CollectionLock[](totalLocks);
         ERC721TokenLock[] memory tempTokenLocks = new ERC721TokenLock[](totalLocks);
@@ -156,24 +163,20 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
             if (lockDuration == 0) continue; // ignore expired locks
 
             if (lock.isCollectionLock) {
-                tempCollectionLocks[collectionIndex] = ERC721CollectionLock({
-                    contractAddress: lock.contractAddress,
-                    duration: uint48(lockDuration)
-                });
+                tempCollectionLocks[collectionIndex] =
+                    ERC721CollectionLock({contractAddress: lock.contractAddress, duration: uint48(lockDuration)});
                 collectionIndex++;
             } else {
                 tempTokenLocks[tokenIndex] = ERC721TokenLock({
-                    token: ERC721Token({
-                        contractAddress: lock.contractAddress,
-                        tokenId: lock.tokenId
-                    }),
+                    token: ERC721Token({contractAddress: lock.contractAddress, tokenId: lock.tokenId}),
                     duration: uint48(lockDuration)
                 });
                 tokenIndex++;
             }
         }
 
-        allDuration = erc721AllLocks[account] > block.timestamp ? uint48(erc721AllLocks[account] - block.timestamp) : 0;
+        allDuration =
+            erc721AllLocks[account] > block.timestamp ? uint48(erc721AllLocks[account] - block.timestamp) : 0;
 
         collectionLocks = new ERC721CollectionLock[](collectionIndex);
         for (uint256 i = 0; i < collectionIndex; ++i) {
@@ -199,7 +202,8 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     /// @inheritdoc BasePlugin
     function onUninstall(bytes calldata) external override {
         uint256 totalLocks = erc721Locks[msg.sender].length();
-        for (uint256 i = totalLocks; i > 0; --i) { // Do the check in reverse to avoid index issues with removal
+        for (uint256 i = totalLocks; i > 0; --i) {
+            // Do the check in reverse to avoid index issues with removal
             ERC721LockMapLib.ERC721Lock memory lock = erc721Locks[msg.sender].at(i - 1);
             require(lock.lockEndTime <= block.timestamp, "Cannot uninstall while a lock is still active");
             erc721Locks[msg.sender].remove(lock.isCollectionLock, lock.contractAddress, lock.tokenId);
@@ -252,15 +256,18 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
             return;
         }
         require(erc721AllLocks[msg.sender] <= block.timestamp, "ERC721 locked");
-        require(erc721Locks[msg.sender].get(true, target, 0).lockEndTime <= block.timestamp, "ERC721 collection locked");
+        require(
+            erc721Locks[msg.sender].get(true, target, 0).lockEndTime <= block.timestamp, "ERC721 collection locked"
+        );
 
         bytes memory toDecode = this.removeSelector(data);
 
         // check if there is an NFT transfer
         if (selector == IERC721.approve.selector) {
-            (/* address to */, uint256 tokenId) = abi.decode(toDecode, (address, uint256));
+            ( /* address to */ , uint256 tokenId) = abi.decode(toDecode, (address, uint256));
             require(
-                erc721Locks[msg.sender].get(false, target, tokenId).lockEndTime <= block.timestamp, "ERC721 collection locked"
+                erc721Locks[msg.sender].get(false, target, tokenId).lockEndTime <= block.timestamp,
+                "ERC721 collection locked"
             );
         } else if (selector == SAFE_TRANSFER_FROM) {
             (address from, /* address to */, uint256 tokenId) = abi.decode(toDecode, (address, address, uint256));
@@ -395,7 +402,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
         manifest.runtimeValidationFunctions[6] = ManifestAssociatedFunction({
             executionSelector: this.unlockERC721Collection.selector,
             associatedFunction: storageKeyRuntimeValidationFunction
-        });        
+        });
         manifest.runtimeValidationFunctions[7] = ManifestAssociatedFunction({
             executionSelector: this.unlockERC721Token.selector,
             associatedFunction: storageKeyRuntimeValidationFunction
