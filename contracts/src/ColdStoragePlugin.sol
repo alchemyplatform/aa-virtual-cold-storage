@@ -112,15 +112,15 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
 
     /// @inheritdoc IColdStoragePlugin
     function unlockERC721Collection(address[] calldata collections) external {
-        for (uint256 i = collections.length - 1; i >= 0; --i) {
-            erc721Locks[msg.sender].remove(true, collections[i], 0);
+        for (uint256 i = collections.length; i > 0; --i) {
+            erc721Locks[msg.sender].remove(true, collections[i - 1], 0);
         }
     }
 
     /// @inheritdoc IColdStoragePlugin
     function unlockERC721Token(ERC721Token[] calldata tokens) external {
-        for (uint256 i = tokens.length - 1; i >= 0; --i) {
-            erc721Locks[msg.sender].remove(false, tokens[i].contractAddress, tokens[i].tokenId);
+        for (uint256 i = tokens.length; i > 0; --i) {
+            erc721Locks[msg.sender].remove(false, tokens[i - 1].contractAddress, tokens[i].tokenId);
         }
     }
 
@@ -199,8 +199,8 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     /// @inheritdoc BasePlugin
     function onUninstall(bytes calldata) external override {
         uint256 totalLocks = erc721Locks[msg.sender].length();
-        for (uint256 i = totalLocks - 1; i >= 0; --i) { // Do the check in reverse to avoid index issues with removal
-            ERC721LockMapLib.ERC721Lock memory lock = erc721Locks[msg.sender].at(i);
+        for (uint256 i = totalLocks; i > 0; --i) { // Do the check in reverse to avoid index issues with removal
+            ERC721LockMapLib.ERC721Lock memory lock = erc721Locks[msg.sender].at(i - 1);
             require(lock.lockEndTime <= block.timestamp);
             erc721Locks[msg.sender].remove(lock.isCollectionLock, lock.contractAddress, lock.tokenId);
         }
