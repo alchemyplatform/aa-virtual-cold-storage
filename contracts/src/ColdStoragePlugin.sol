@@ -201,7 +201,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
         uint256 totalLocks = erc721Locks[msg.sender].length();
         for (uint256 i = totalLocks; i > 0; --i) { // Do the check in reverse to avoid index issues with removal
             ERC721LockMapLib.ERC721Lock memory lock = erc721Locks[msg.sender].at(i - 1);
-            require(lock.lockEndTime <= block.timestamp);
+            require(lock.lockEndTime <= block.timestamp, "Cannot uninstall while a lock is still active");
             erc721Locks[msg.sender].remove(lock.isCollectionLock, lock.contractAddress, lock.tokenId);
         }
     }
