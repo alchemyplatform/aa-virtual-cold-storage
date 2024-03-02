@@ -120,7 +120,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     /// @inheritdoc IColdStoragePlugin
     function unlockERC721Token(ERC721Token[] calldata tokens) external {
         for (uint256 i = tokens.length; i > 0; --i) {
-            erc721Locks[msg.sender].remove(false, tokens[i - 1].contractAddress, tokens[i].tokenId);
+            erc721Locks[msg.sender].remove(false, tokens[i - 1].contractAddress, tokens[i-1].tokenId);
         }
     }
 
