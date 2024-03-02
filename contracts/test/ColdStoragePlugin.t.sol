@@ -12,6 +12,7 @@ import {EntryPoint} from "@eth-infinitism/account-abstraction/core/EntryPoint.so
 import {FreelyMintableNft} from "../src/nft/FreelyMintableNft.sol";
 import {FunctionReferenceLib} from "modular-account/helpers/FunctionReferenceLib.sol";
 import {IMultiOwnerPlugin} from "modular-account/plugins/owner/IMultiOwnerPlugin.sol";
+import {Call} from "modular-account/interfaces/IStandardExecutor.sol";
 
 contract ColdStoragePluginTest is Test {
     FreelyMintableNft public nft;
@@ -20,6 +21,8 @@ contract ColdStoragePluginTest is Test {
     address[] public owners;
     address _owner;
     uint256 _ownerKey;
+    address _storageKey;
+    uint256 _storagePrivateKey;
     MultiOwnerPlugin _multiOwnerPlugin;
     MultiOwnerModularAccountFactory _factory;
     UpgradeableModularAccount _account;
@@ -27,6 +30,7 @@ contract ColdStoragePluginTest is Test {
     function setUp() public {
         entryPoint = IEntryPoint(address(new EntryPoint()));
         (_owner, _ownerKey) = makeAddrAndKey("owner");
+        (_storageKey, _storagePrivateKey) = makeAddrAndKey("storageKey");
         vm.deal(address(_account), 100 ether);
 
         // setup plugins and factory
@@ -60,7 +64,7 @@ contract ColdStoragePluginTest is Test {
         _account.installPlugin({
             plugin: address(coldStoragePlugin),
             manifestHash: manifestHash,
-            pluginInstallData: abi.encode(address(_owner)),
+            pluginInstallData: abi.encode(address(_storageKey)),
             dependencies: dependencies
         });
 
@@ -70,7 +74,6 @@ contract ColdStoragePluginTest is Test {
 
     function testLockAll() public {
         nft.mint(address(_account), 1);
-        nft.mint(address(_owner), 3);
         vm.prank(_owner);
         ColdStoragePlugin(address(_account)).lockERC721All(100);
 
@@ -97,5 +100,21 @@ contract ColdStoragePluginTest is Test {
         _account.execute(
             address(nft), 0, abi.encodeWithSelector(0x42842e0e, address(_account), address(uint160(1)), 0)
         );
+    }
+
+    function testExecuteFromStorageKey() public {
+        nft.mint(address(_account), 1);
+        vm.prank(_owner);
+        ColdStoragePlugin(address(_account)).lockERC721All(100);
+
+        Call[] memory calls = new Call[](1);
+        calls[0] = Call({
+            target: address(nft),
+            value: 0,
+            data: abi.encodeWithSelector(0x42842e0e, address(_account), address(uint160(1)), 0)
+        });        
+        vm.prank(_storageKey);
+        ColdStoragePlugin(address(_account)).executeWithStorageKey(calls);
+        assertEq(nft.ownerOf(0), address(uint160(1)));
     }
 }
