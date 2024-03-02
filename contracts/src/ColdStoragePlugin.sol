@@ -64,7 +64,6 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
 
     /// @inheritdoc IColdStoragePlugin
     function changeStorageKey(address account, address storageKey) external {
-        require(storageKeys[account] == msg.sender, "Must use storage key to change storage key");
         storageKeys[account] = storageKey;
     }
 
@@ -107,24 +106,21 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     }
 
     /// @inheritdoc IColdStoragePlugin
-    function unlockERC721All(address account) external {
-        require(storageKeys[account] == msg.sender, "Must use storage key to unlock");
-        delete erc721AllLocks[account];
+    function unlockERC721All() external {
+        delete erc721AllLocks[msg.sender];
     }
 
     /// @inheritdoc IColdStoragePlugin
-    function unlockERC721Collection(address account, address[] calldata collections) external {
-        require(storageKeys[account] == msg.sender, "Must use storage key to unlock");
+    function unlockERC721Collection(address[] calldata collections) external {
         for (uint256 i = 0; i < collections.length; ++i) {
-            erc721Locks[account].remove(true, collections[i], 0);
+            erc721Locks[msg.sender].remove(true, collections[i], 0);
         }
     }
 
     /// @inheritdoc IColdStoragePlugin
-    function unlockERC721Token(address account, ERC721Token[] calldata tokens) external {
-        require(storageKeys[account] == msg.sender, "Must use storage key to unlock");
+    function unlockERC721Token(ERC721Token[] calldata tokens) external {
         for (uint256 i = 0; i < tokens.length; ++i) {
-            erc721Locks[account].remove(false, tokens[i].contractAddress, tokens[i].tokenId);
+            erc721Locks[msg.sender].remove(false, tokens[i].contractAddress, tokens[i].tokenId);
         }
     }
 
@@ -208,6 +204,20 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
             require(lock.lockEndTime <= block.timestamp);
             erc721Locks[msg.sender].remove(lock.isCollectionLock, lock.contractAddress, lock.tokenId);
         }
+    }
+
+    /// @inheritdoc BasePlugin
+    function runtimeValidationFunction(uint8 functionId, address sender, uint256, bytes calldata)
+        external
+        view
+        override
+    {
+        if (functionId == uint8(FunctionId.RUNTIME_VALIDATION_STORAGE_KEY)) {
+            // Validate that the sender is the storage key.
+            require(sender == storageKeys[msg.sender]);
+            return;
+        }
+        revert NotImplemented(msg.sig, functionId);
     }
 
     /// @inheritdoc BasePlugin
@@ -347,8 +357,8 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
         });
 
         ManifestFunction memory storageKeyRuntimeValidationFunction = ManifestFunction({
-            functionType: ManifestAssociatedFunctionType.RUNTIME_VALIDATION_ALWAYS_ALLOW,
-            functionId: 0, // Unused.
+            functionType: ManifestAssociatedFunctionType.SELF,
+            functionId: uint8(FunctionId.RUNTIME_VALIDATION_STORAGE_KEY),
             dependencyIndex: 0 // Unused.
         });
         ManifestFunction memory ownerRuntimeValidationFunction = ManifestFunction({

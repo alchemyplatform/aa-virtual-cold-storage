@@ -6,6 +6,7 @@ import {Call} from "modular-account/interfaces/IStandardExecutor.sol";
 interface IColdStoragePlugin {
     enum FunctionId {
         USER_OP_VALIDATION_STORAGE_KEY,
+        RUNTIME_VALIDATION_STORAGE_KEY,
         EXECUTE_PRE_EXEC_HOOK
     }
 
@@ -74,18 +75,15 @@ interface IColdStoragePlugin {
     function lockERC721Token(ERC721TokenLock[] calldata locks) external;
 
     /// @notice Remove all locks on ERC721 tokens.
-    /// @param account The account to unlock all ERC721 tokens for.
-    function unlockERC721All(address account) external;
+    function unlockERC721All() external;
 
     /// @notice Remove all locks on specific ERC721 collections.
-    /// @param account The account to unlock collections for.
     /// @param collections The collections to unlock.
-    function unlockERC721Collection(address account, address[] calldata collections) external;
+    function unlockERC721Collection(address[] calldata collections) external;
 
     /// @notice Remove locks on specific ERC721 tokens.
-    /// @param account The account to unlock tokens for.
     /// @param tokens The tokens to unlock.
-    function unlockERC721Token(address account, ERC721Token[] calldata tokens) external;
+    function unlockERC721Token(ERC721Token[] calldata tokens) external;
 
     // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
     // ┃    Plugin only view functions    ┃
