@@ -1,7 +1,8 @@
 'use client';
+
 import { Link } from '@chakra-ui/next-js';
 import { Flex, Icon, IconButton, Text, Tooltip, useColorMode } from '@chakra-ui/react';
-import { WeatherMoon20Filled, WeatherSunny20Filled } from '@fluentui/react-icons';
+import { VideoPerson20Filled, WeatherMoon20Filled, WeatherSunny20Filled } from '@fluentui/react-icons';
 import NextLink from 'next/link';
 import { FC } from 'react';
 import { AppIcon } from '../icons/appIcon';
@@ -17,7 +18,7 @@ export const BaseLayout: FC<BaseLayoutProps> = ({ children }) => {
   const { toggleColorMode, colorMode } = useColorMode();
   const isDark = colorMode === 'dark';
   return (
-    <Flex flexDir="column" maxW={1200} minH="100vh" mx={{ base: 4, lg: 'auto' }}>
+    <Flex flexDir="column" padding={12} maxW={1200} minH="100vh" mx={{ base: 4, lg: 'auto' }}>
       <Flex justifyContent="space-between" py={8}>
         <NextLink href="/">
           <AppIcon />
@@ -33,6 +34,14 @@ export const BaseLayout: FC<BaseLayoutProps> = ({ children }) => {
           <Link target="_blank" rel="noopener noreferrer" href="https://accountkit.alchemy.com/">
             Account Kit
           </Link>
+          <Tooltip label="Your Account" openDelay={500}>
+            <IconButton
+              aria-label="Your Account"
+              variant="ghost"
+              icon={<Icon as={VideoPerson20Filled} boxSize={5} />}
+              onClick={toggleColorMode}
+            />
+          </Tooltip>
           <Tooltip label={`Change theme to ${isDark ? 'light' : 'dark'}`} openDelay={500}>
             <IconButton
               aria-label="Change theme"

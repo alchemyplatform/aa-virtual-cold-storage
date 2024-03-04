@@ -1,4 +1,5 @@
 'use client';
+
 import {
   Box,
   Button,
@@ -6,7 +7,6 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Link,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -113,9 +113,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({ readOnly }) => {
           Source on GitHub
         </Button>
         <Text mt={4} fontSize="xs" color="textSubtle">
-          This demo set to read only mode.{' '}
-          <Link href="https://github.com/xataio/sample-nextjs-chakra-gallery-app/">Run it locally</Link> to explore the
-          full functionality.
+          Read only mode
         </Text>
       </Box>
     );

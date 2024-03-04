@@ -1,4 +1,5 @@
 'use client';
+
 import { ImageRecord, TagRecord } from '@/utils/xata';
 import { Link } from '@chakra-ui/next-js';
 import { Box, Flex, Heading, Select, SimpleGrid, Tag, Text } from '@chakra-ui/react';
