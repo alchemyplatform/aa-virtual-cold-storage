@@ -78,7 +78,7 @@ export const LoginSignupCard = ({ signer, onLogin }: Props) => {
 
           <TabPanels>
             <TabPanel>
-              <Box h="36vh" alignContent="center" py="6vh">
+              <Box h="36vh" alignContent="center" py="4vh">
                 {email && isPending ? (
                   <Alert
                     status="success"
@@ -90,10 +90,10 @@ export const LoginSignupCard = ({ signer, onLogin }: Props) => {
                     height="200px"
                   >
                     <AlertIcon boxSize="40px" mr={0} />
-                    <AlertTitle mt={4} mb={1} fontSize="lg">
+                    <AlertTitle mt={4} mb={1} fontSize="md">
                       Check your email
                     </AlertTitle>
-                    <AlertDescription maxWidth="xs">
+                    <AlertDescription fontSize="xs">
                       We sent an email to you at {email}. It has a magic link that&apos;ll log you in.
                     </AlertDescription>
                   </Alert>

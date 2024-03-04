@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <Center flex={1}>
       {isLoadingUser ? (
-        <Spinner thickness="4px" speed="0.65s" emptyColor="gray.200" color="primary.500" size="xl" />
+        <Spinner thickness="4px" speed="0.65s" emptyColor="gray.200" color="primary.500" size="3xl" />
       ) : account == null ? (
         <LoginSignupCard signer={signer} onLogin={refetchUserDetails} />
       ) : (
