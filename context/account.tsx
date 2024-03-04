@@ -1,60 +1,69 @@
 'use client';
 
-import { AlchemyModularAccountClient, useAlchemyModularAccountClient } from '@/hooks/useAlchemyModularAccountClient';
-import { useAlchemySigner } from '@/hooks/useAlchemySigner';
-import { MultiOwnerModularAccount } from '@alchemy/aa-accounts';
-import { AlchemySigner, User } from '@alchemy/aa-alchemy';
-import { ReactNode, createContext, useContext, useEffect } from 'react';
+import { publicClient } from '@/client';
+import { env } from '@/env.mjs';
+import {
+  AccountLoupeActions,
+  MultiOwnerPluginActions,
+  PluginManagerActions,
+  accountLoupeActions,
+  multiOwnerPluginActions,
+  pluginManagerActions,
+  type MultiOwnerModularAccount
+} from '@alchemy/aa-accounts';
+import {
+  AlchemySigner,
+  AlchemySmartAccountClient,
+  BaseAlchemyActions,
+  createAlchemySmartAccountClient
+} from '@alchemy/aa-alchemy';
+import { PropsWithChildren, createContext, useContext, useState } from 'react';
+import type { Chain, Transport } from 'viem';
 
-type AlchemyAccountContextProps = {
-  // Functions
-
-  // Properties
-  client: AlchemyModularAccountClient | undefined;
-  account: MultiOwnerModularAccount<AlchemySigner> | undefined;
-  user: User | undefined;
+type AccountContextType = {
+  client: AlchemySmartAccountClient<
+    Transport,
+    Chain | undefined,
+    MultiOwnerModularAccount<AlchemySigner>,
+    BaseAlchemyActions<Chain | undefined, MultiOwnerModularAccount<AlchemySigner>> &
+      MultiOwnerPluginActions<MultiOwnerModularAccount<AlchemySigner>> &
+      PluginManagerActions<MultiOwnerModularAccount<AlchemySigner>> &
+      AccountLoupeActions<MultiOwnerModularAccount<AlchemySigner>>
+  >;
 };
 
-const defaultUnset: any = null;
-const AlchemyAccountContext = createContext<AlchemyAccountContextProps>({
-  // Default Values
-  client: defaultUnset,
-  account: defaultUnset,
-  user: defaultUnset
-});
+const AccountContext = createContext<AccountContextType | undefined>(undefined);
 
-export const useAlchemyAccountContext = () => useContext(AlchemyAccountContext);
+export const useAccountContext = () => {
+  const context = useContext(AccountContext);
 
-export const AlchemyAccountProvider = ({ children }: { children: ReactNode }) => {
-  const { user, alchemySigner } = useAlchemySigner();
-  const { client, connect } = useAlchemyModularAccountClient();
+  if (context === undefined) {
+    throw new Error('useAccountContext must be used within the AccountProvider');
+  }
 
-  useEffect(() => {
-    if (!user || !client || client.account) return;
+  return context;
+};
 
-    async function init(signer: AlchemySigner) {
-      return connect(signer);
-    }
+type CreateContextProviderProps = {
+  account: MultiOwnerModularAccount<AlchemySigner>;
+};
 
-    alchemySigner
-      .then((signer) => {
-        if (!signer) {
-          return;
-        }
-        return init(signer).then((_client) => console.log('[Alchemy Account] active', _client.account.address));
-      })
-      .catch((e) => console.error('[Alchemy Account] error', e));
-  }, [alchemySigner, client, client?.account, connect, user]);
+export const AccountContextProvider = ({ children, account }: PropsWithChildren<CreateContextProviderProps>) => {
+  const [client] = useState(() => {
+    if (typeof document === 'undefined') return undefined;
 
-  return (
-    <AlchemyAccountContext.Provider
-      value={{
-        user,
-        account: client?.account,
-        client
-      }}
-    >
-      {children}
-    </AlchemyAccountContext.Provider>
-  );
+    return createAlchemySmartAccountClient({
+      chain: publicClient.chain,
+      rpcUrl: '/api/rpc',
+      account,
+      gasManagerConfig: {
+        policyId: env.NEXT_PUBLIC_ALCHEMY_GAS_MANAGER_POLICY_ID
+      }
+    })
+      .extend(multiOwnerPluginActions)
+      .extend(pluginManagerActions)
+      .extend(accountLoupeActions);
+  });
+
+  return <AccountContext.Provider value={{ client: client! }}>{children}</AccountContext.Provider>;
 };

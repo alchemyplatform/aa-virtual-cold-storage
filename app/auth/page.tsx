@@ -1,3 +1,5 @@
+'use client';
+
 import { OAuthButtonGroup } from '@/components/auth/OAuthButtonGroup';
 import { PasswordField } from '@/components/auth/PasswordFields';
 import { AppIcon } from '@/components/icons/appIcon';
@@ -9,15 +11,15 @@ import {
   Divider,
   FormControl,
   FormLabel,
-  Heading,
   HStack,
+  Heading,
   Input,
   Link,
   Stack,
   Text
 } from '@chakra-ui/react';
 
-export const App = () => (
+export const Page = () => (
   <Container maxW="lg" py={{ base: '12', md: '24' }} px={{ base: '0', sm: '8' }}>
     <Stack spacing="8">
       <Stack spacing="6">

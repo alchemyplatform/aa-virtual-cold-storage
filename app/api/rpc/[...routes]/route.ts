@@ -6,12 +6,13 @@ import { NextResponse } from 'next/server';
 export const runtime = 'edge';
 export const preferredRegion = 'iad1';
 
-export async function POST(req: Request) {
+export async function POST(req: Request, { params }: { params: { routes: string[] } }) {
   const body = await req.json();
 
-  const res = await fetch(env.ALCHEMY_RPC_URL, {
+  const res = await fetch(env.ALCHEMY_API_URL + `/${params.routes.join('/')}`, {
     method: 'POST',
     headers: {
+      Authorization: `Bearer ${env.ALCHEMY_API_KEY}`,
       ...req.headers
     },
     body: JSON.stringify(body)

@@ -1,5 +1,11 @@
 /** @type {import('next').NextConfig} */
 
+/**
+ * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.
+ * This is especially useful for Docker builds.
+ */
+await import("./env.mjs");
+
 const domains = [
   'us-east-1.storage.xata.sh',
   'us-west-2.storage.xata.sh',
@@ -22,6 +28,8 @@ const domainsRemote = domains.map((domain) => {
 });
 
 const nextConfig = {
+  output: "standalone",
+  reactStrictMode: true,
   logging: {
     fetches: {
       fullUrl: true
