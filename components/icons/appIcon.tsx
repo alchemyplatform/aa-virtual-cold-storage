@@ -1,7 +1,7 @@
 import { Icon, IconProps } from '@chakra-ui/react';
 
 export const AppIcon: React.FC<IconProps> = ({ css, ...props }) => (
-  <Icon viewBox="0 0 697 696" width="697px" height="696px" {...props}>
+  <Icon viewBox="0 0 697 696" width="72px" height="72px" {...props}>
     <path
       d="M619.236 348C619.236 497.192 498.023 618.135 348.5 618.135C198.977 618.135 77.7646 497.192 77.7646 348C77.7646 198.808 198.977 77.8647 348.5 77.8647C498.023 77.8647 619.236 198.808 619.236 348Z"
       fill="white"

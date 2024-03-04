@@ -11,6 +11,7 @@ export const GlobalStyle = css`
   @supports (font-variation-settings: normal) {
     html {
       font-family: 'Inter var', sans-serif;
+      font-size: 1.1rem;
     }
   }
   @font-face {

@@ -51,8 +51,8 @@ const variantSubdued = (props: StyleFunctionProps) => {
 const variantHeadingGradient = (props: StyleFunctionProps) => {
   const isDarkMode = props.colorMode === 'dark';
   const gradient = isDarkMode
-    ? 'linear-gradient(87.55deg, var(--chakra-colors-gray-50) 33.91%, var(--chakra-colors-pink-50) 65.85%)'
-    : 'linear-gradient(87.55deg, var(--chakra-colors-gray-800) 33.91%, var(--chakra-colors-purple-700) 65.85%)';
+    ? 'linear-gradient(87.55deg, var(--chakra-colors-gray-50) 33.91%, var(--chakra-colors-accent-50) 65.85%)'
+    : 'linear-gradient(87.55deg, var(--chakra-colors-gray-800) 33.91%, var(--chakra-colors-primary-700) 65.85%)';
 
   return {
     textShadow: 'lg',

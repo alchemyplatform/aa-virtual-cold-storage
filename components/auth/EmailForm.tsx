@@ -1,4 +1,4 @@
-import { Button, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input, Stack } from '@chakra-ui/react';
+import { Button, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -28,29 +28,27 @@ const EmailForm = ({ onSubmit, buttonDisabled }: EmailFormProps) => {
   const _onSubmit: SubmitHandler<IFormInput> = ({ email }) => onSubmit(email);
 
   return (
-    <form onSubmit={handleSubmit(_onSubmit)}>
-      <Stack spacing="4px">
-        <FormControl isRequired isInvalid={!!errors.email}>
-          <FormLabel htmlFor="email">Email</FormLabel>
-          <Input
-            id="email"
-            placeholder="hello@alchemy.com"
-            {...register('email', {
-              required: 'This is required',
-              pattern: {
-                value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                message: 'Please enter a valid email'
-              }
-            })}
-          />
-          {errors.email ? (
-            <FormErrorMessage>{errors.email.message}</FormErrorMessage>
-          ) : (
-            <FormHelperText>We&apos;ll never share your email.</FormHelperText>
-          )}
-        </FormControl>
+    <form onSubmit={handleSubmit(_onSubmit)} style={{ width: '70%' }}>
+      <FormControl isRequired isInvalid={!!errors.email}>
+        <FormLabel htmlFor="email" ms={1}>
+          Email
+        </FormLabel>
+        <Input
+          id="email"
+          placeholder="hello@alchemy.com"
+          {...register('email', {
+            required: 'This is required',
+            pattern: {
+              value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+              message: 'Please enter a valid email'
+            }
+          })}
+          mt={1}
+        />
         <Button
-          padding={4}
+          mt={3}
+          px={4}
+          w="full"
           colorScheme="primary"
           isLoading={!buttonDisabled && isSubmitting}
           isDisabled={isSubmitting || buttonDisabled}
@@ -58,7 +56,14 @@ const EmailForm = ({ onSubmit, buttonDisabled }: EmailFormProps) => {
         >
           Submit
         </Button>
-      </Stack>
+        {errors.email ? (
+          <FormErrorMessage>{errors.email.message}</FormErrorMessage>
+        ) : (
+          <FormHelperText fontSize="xs" color="gray.300">
+            *We&apos;ll never share your email.
+          </FormHelperText>
+        )}
+      </FormControl>
     </form>
   );
 };

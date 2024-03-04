@@ -1,12 +1,12 @@
 'use client';
 
-import { AppIcon } from '@/components/icons/appIcon';
 import { AlchemySigner } from '@alchemy/aa-alchemy';
 import {
   Alert,
   AlertDescription,
   AlertIcon,
   AlertTitle,
+  Box,
   Button,
   Card,
   CardBody,
@@ -20,10 +20,12 @@ import {
   TabPanel,
   TabPanels,
   Tabs,
+  VStack,
   useDisclosure
 } from '@chakra-ui/react';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
+import { AppIcon } from '../icons/appIcon';
 import EmailForm from './EmailForm';
 
 type Props = {
@@ -59,8 +61,10 @@ export const LoginSignupCard = ({ signer, onLogin }: Props) => {
   return (
     <Card align="center" w="lg" h="lg">
       <CardHeader>
-        <AppIcon m={4} />
-        <Heading size="md">Login or Sign Up</Heading>
+        <Center flex="1" flexDirection="column">
+          <AppIcon />
+          <Heading size="md">Login or Sign Up</Heading>
+        </Center>
       </CardHeader>
 
       <CardBody w="full">
@@ -74,7 +78,7 @@ export const LoginSignupCard = ({ signer, onLogin }: Props) => {
 
           <TabPanels>
             <TabPanel>
-              <Center h="36vh">
+              <Box h="36vh" alignContent="center" py="6vh">
                 {email && isPending ? (
                   <Alert
                     status="success"
@@ -89,7 +93,7 @@ export const LoginSignupCard = ({ signer, onLogin }: Props) => {
                     <AlertTitle mt={4} mb={1} fontSize="lg">
                       Check your email
                     </AlertTitle>
-                    <AlertDescription maxWidth="sm">
+                    <AlertDescription maxWidth="xs">
                       We sent an email to you at {email}. It has a magic link that&apos;ll log you in.
                     </AlertDescription>
                   </Alert>
@@ -97,21 +101,26 @@ export const LoginSignupCard = ({ signer, onLogin }: Props) => {
                   <EmailForm
                     onSubmit={(email) => {
                       _onClose();
-                      return setEmail(email);
+                      setEmail(email);
+                      return mutate({
+                        type: 'email',
+                        email
+                      });
                     }}
                     buttonDisabled={authType !== 'email'}
                   />
                 )}
-              </Center>
+              </Box>
             </TabPanel>
 
             <TabPanel>
-              <Center h="18vh">
+              <VStack h="18vh" w="50%" align="stretch">
                 <Button
                   padding={4}
+                  mt={20}
                   colorScheme="primary"
                   isLoading={authType === 'passkey' && isPending}
-                  isDisabled={authType !== 'email'}
+                  isDisabled={authType !== 'passkey' || isPending}
                   onClick={() => {
                     _onClose();
                     return mutate({
@@ -123,14 +132,12 @@ export const LoginSignupCard = ({ signer, onLogin }: Props) => {
                 >
                   Add New Passkey
                 </Button>
-              </Center>
-
-              <Center h="18vh">
                 <Button
                   padding={4}
+                  my={8}
                   colorScheme="primary"
-                  isLoading={isPending}
-                  isDisabled={isPending}
+                  isLoading={authType === 'passkey' && isPending}
+                  isDisabled={authType !== 'passkey' || isPending}
                   onClick={() => {
                     _onClose();
                     return mutate({ type: 'passkey', createNew: false });
@@ -138,7 +145,7 @@ export const LoginSignupCard = ({ signer, onLogin }: Props) => {
                 >
                   Use Existing Passkey
                 </Button>
-              </Center>
+              </VStack>
             </TabPanel>
           </TabPanels>
         </Tabs>
