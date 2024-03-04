@@ -1,5 +1,5 @@
 import { Images, TagWithImageCount } from '@/components/images';
-import { IMAGES_PER_PAGE_COUNT, IMAGE_SIZE } from '@/utils/constants';
+import { IMAGE_SIZE, PAGE_SIZE } from '@/utils/constants';
 import { getXataClient } from '@/utils/xata';
 import { compact, pick } from 'lodash';
 
@@ -21,7 +21,7 @@ export default async function Page({ searchParams }: { searchParams: { page: str
 
   // get a paginated list of images, sorted by date
   const imagesPagePromise = xata.db.image.sort('xata.createdAt', 'desc').getPaginated({
-    pagination: { size: IMAGES_PER_PAGE_COUNT, offset: IMAGES_PER_PAGE_COUNT * pageNumber - IMAGES_PER_PAGE_COUNT }
+    pagination: { size: PAGE_SIZE, offset: PAGE_SIZE * pageNumber - PAGE_SIZE }
   });
 
   const imageCountPromise = getImageCount();
@@ -46,7 +46,7 @@ export default async function Page({ searchParams }: { searchParams: { page: str
   const [imagesPage, imageCount, topTags] = await Promise.all([imagesPagePromise, imageCountPromise, topTagsPromise]);
   console.timeEnd('Fetching images');
 
-  const totalNumberOfPages = Math.ceil(imageCount / IMAGES_PER_PAGE_COUNT);
+  const totalNumberOfPages = Math.ceil(imageCount / PAGE_SIZE);
 
   // This page object is needed for building the buttons in the pagination component
   const page = {
