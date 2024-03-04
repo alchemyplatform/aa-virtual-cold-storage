@@ -1,6 +1,6 @@
 'use client';
 
-import { publicClient } from '@/client';
+import { publicClient } from '@/utils/client';
 import { MultiOwnerModularAccount, createMultiOwnerModularAccount } from '@alchemy/aa-accounts';
 import { AlchemySigner, AlchemySignerClient, AlchemySignerParams, User } from '@alchemy/aa-alchemy';
 import { useToast } from '@chakra-ui/react';

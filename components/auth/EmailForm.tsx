@@ -30,7 +30,7 @@ const EmailForm = ({ onSubmit, buttonDisabled }: EmailFormProps) => {
   return (
     <form onSubmit={handleSubmit(_onSubmit)} style={{ width: '70%' }}>
       <FormControl isRequired isInvalid={!!errors.email}>
-        <FormLabel htmlFor="email" ms={1}>
+        <FormLabel htmlFor="email" ms={1} fontSize="0.8rem">
           Email
         </FormLabel>
         <Input
@@ -43,7 +43,7 @@ const EmailForm = ({ onSubmit, buttonDisabled }: EmailFormProps) => {
               message: 'Please enter a valid email'
             }
           })}
-          mt={1}
+          my={2}
         />
         <Button
           mt={3}

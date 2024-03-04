@@ -1,8 +1,9 @@
 'use client';
 
-import { publicClient } from '@/client';
 import { env } from '@/env.mjs';
 import { ColdStoragePluginActions, coldStoragePluginActions } from '@/plugin';
+import { alchemy } from '@/utils/alchemy';
+import { publicClient } from '@/utils/client';
 import {
   AccountLoupeActions,
   MultiOwnerPluginActions,
@@ -16,6 +17,7 @@ import {
   AlchemySigner,
   AlchemySmartAccountClient,
   BaseAlchemyActions,
+  alchemyEnhancedApiActions,
   createAlchemySmartAccountClient
 } from '@alchemy/aa-alchemy';
 import { PropsWithChildren, createContext, useContext, useState } from 'react';
@@ -65,7 +67,8 @@ export const AccountContextProvider = ({ children, account }: PropsWithChildren<
       .extend(multiOwnerPluginActions)
       .extend(coldStoragePluginActions)
       .extend(pluginManagerActions)
-      .extend(accountLoupeActions);
+      .extend(accountLoupeActions)
+      .extend(alchemyEnhancedApiActions(alchemy));
   });
 
   return <AccountContext.Provider value={{ client: client! }}>{children}</AccountContext.Provider>;

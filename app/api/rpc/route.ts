@@ -7,7 +7,7 @@ export const runtime = 'edge';
 export const preferredRegion = 'iad1';
 
 export async function POST(req: Request) {
-  const body = await req.json();
+  const body = await req.json().catch(console.error);
 
   const res = await fetch(env.ALCHEMY_RPC_URL, {
     method: 'POST',

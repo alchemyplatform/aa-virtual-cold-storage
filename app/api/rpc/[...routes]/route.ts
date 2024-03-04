@@ -7,7 +7,7 @@ export const runtime = 'edge';
 export const preferredRegion = 'iad1';
 
 export async function POST(req: Request, { params }: { params: { routes: string[] } }) {
-  const body = await req.json();
+  const body = await req.json().catch(console.error);
 
   const res = await fetch(env.ALCHEMY_API_URL + `/${params.routes.join('/')}`, {
     method: 'POST',
