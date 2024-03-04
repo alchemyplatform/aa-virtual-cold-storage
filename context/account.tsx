@@ -2,6 +2,7 @@
 
 import { publicClient } from '@/client';
 import { env } from '@/env.mjs';
+import { ColdStoragePluginActions, coldStoragePluginActions } from '@/plugin';
 import {
   AccountLoupeActions,
   MultiOwnerPluginActions,
@@ -27,6 +28,7 @@ type AccountContextType = {
     MultiOwnerModularAccount<AlchemySigner>,
     BaseAlchemyActions<Chain | undefined, MultiOwnerModularAccount<AlchemySigner>> &
       MultiOwnerPluginActions<MultiOwnerModularAccount<AlchemySigner>> &
+      ColdStoragePluginActions<MultiOwnerModularAccount<AlchemySigner>> &
       PluginManagerActions<MultiOwnerModularAccount<AlchemySigner>> &
       AccountLoupeActions<MultiOwnerModularAccount<AlchemySigner>>
   >;
@@ -61,6 +63,7 @@ export const AccountContextProvider = ({ children, account }: PropsWithChildren<
       }
     })
       .extend(multiOwnerPluginActions)
+      .extend(coldStoragePluginActions)
       .extend(pluginManagerActions)
       .extend(accountLoupeActions);
   });
