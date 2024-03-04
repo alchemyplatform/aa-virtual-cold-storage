@@ -2,9 +2,10 @@
 
 import { Link } from '@chakra-ui/next-js';
 import { Flex, Icon, IconButton, Text, Tooltip, useColorMode } from '@chakra-ui/react';
-import { VideoPerson20Filled, WeatherMoon20Filled, WeatherSunny20Filled } from '@fluentui/react-icons';
+import { WeatherMoon20Filled, WeatherSunny20Filled } from '@fluentui/react-icons';
 import NextLink from 'next/link';
 import { FC } from 'react';
+import { HiOutlineUser } from 'react-icons/hi';
 import { AppIcon } from '../icons/appIcon';
 import { DiscordIcon } from '../icons/discord';
 import { GitHubIcon } from '../icons/github';
@@ -18,27 +19,30 @@ export const BaseLayout: FC<BaseLayoutProps> = ({ children }) => {
   const { toggleColorMode, colorMode } = useColorMode();
   const isDark = colorMode === 'dark';
   return (
-    <Flex flexDir="column" padding={12} maxW={1200} minH="100vh" mx={{ base: 4, lg: 'auto' }}>
-      <Flex justifyContent="space-between" py={8}>
-        <NextLink href="/">
-          <AppIcon />
-        </NextLink>
+    <Flex flexDir="column" px={8} py={2} maxW={1200} minH="100vh" mx={{ base: 4, lg: 'auto' }}>
+      <Flex justifyContent="space-between">
         <Flex gap={4} alignItems="center">
+          <NextLink href="/">
+            <AppIcon />
+          </NextLink>
           <Link
+            fontSize="0.9rem"
             target="_blank"
             rel="noopener noreferrer"
             href="https://accountkit.alchemy.com/getting-started/setup.html"
           >
             Docs
           </Link>
-          <Link target="_blank" rel="noopener noreferrer" href="https://accountkit.alchemy.com/">
+          <Link fontSize="0.9rem" target="_blank" rel="noopener noreferrer" href="https://accountkit.alchemy.com/">
             Account Kit
           </Link>
+        </Flex>
+        <Flex gap={4} alignItems="center">
           <Tooltip label="Your Account" openDelay={500}>
             <IconButton
               aria-label="Your Account"
               variant="ghost"
-              icon={<Icon as={VideoPerson20Filled} boxSize={5} />}
+              icon={<Icon as={HiOutlineUser} boxSize={6} />}
               onClick={toggleColorMode}
             />
           </Tooltip>
@@ -55,8 +59,8 @@ export const BaseLayout: FC<BaseLayoutProps> = ({ children }) => {
       <Flex flexDir="column" flex={1}>
         {children}
       </Flex>
-      <Flex as="footer" py={8} gap={3} alignItems="center" justifyContent="space-between">
-        <Text color="textSubdued">
+      <Flex as="footer" pt={8} pb={2} gap={3} alignItems="center" justifyContent="space-between">
+        <Text color="textSubdued" fontSize="xs" ms={4}>
           {new Date().getFullYear()}
           <Link href="https://www.alchemy.com/" target="_blank" rel="noopener noreferrer">
             {' '}
@@ -64,12 +68,12 @@ export const BaseLayout: FC<BaseLayoutProps> = ({ children }) => {
           </Link>
         </Text>
 
-        <Flex alignItems="center" gap={3}>
+        <Flex alignItems="center" gap={6}>
           <IconButton
             variant="ghost"
             aria-label="aa-sdk on Github"
             as={Link}
-            icon={<GitHubIcon boxSize={5} />}
+            icon={<GitHubIcon boxSize={6} />}
             target="_blank"
             rel="noopener noreferrer"
             href="https://github.com/alchemyplatform/aa-sdk"
@@ -78,7 +82,7 @@ export const BaseLayout: FC<BaseLayoutProps> = ({ children }) => {
             variant="ghost"
             aria-label="Alchemy Discord"
             as={Link}
-            icon={<DiscordIcon boxSize={5} />}
+            icon={<DiscordIcon boxSize={6} />}
             target="_blank"
             rel="noopener noreferrer"
             href="https://discord.gg/alchemyplatform"
@@ -87,7 +91,7 @@ export const BaseLayout: FC<BaseLayoutProps> = ({ children }) => {
             variant="ghost"
             aria-label="Alchemy Twitter"
             as={Link}
-            icon={<TwitterIcon boxSize={5} />}
+            icon={<TwitterIcon boxSize={6} />}
             target="_blank"
             rel="noopener noreferrer"
             href="https://twitter.com/AlchemyPlatform"
