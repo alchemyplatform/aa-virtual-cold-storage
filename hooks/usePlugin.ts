@@ -27,6 +27,7 @@ export const usePlugin = <TAbi extends Abi>(client: AlchemySmartAccountClient, p
 
   const isPluginInstalled = useCallback(async () => {
     if (!client.account) return false;
+    if (!(await client.account.isAccountDeployed())) return false;
     const plugins = await client.extend(accountLoupeActions).getInstalledPlugins({ account: client.account });
     return plugins.some((p) => p === address);
   }, [address, client]);
