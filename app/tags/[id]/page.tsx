@@ -1,5 +1,5 @@
 import { Images, TagWithImageCount } from '@/components/images';
-import { IMAGES_PER_PAGE_COUNT, IMAGE_SIZE } from '@/utils/constants';
+import { IMAGE_SIZE, PAGE_SIZE } from '@/utils/constants';
 import { getXataClient } from '@/utils/xata';
 import { compact } from 'lodash';
 
@@ -37,7 +37,7 @@ export default async function Page({
     })
     .select(['*', 'image.image'])
     .getPaginated({
-      pagination: { size: IMAGES_PER_PAGE_COUNT, offset: IMAGES_PER_PAGE_COUNT * pageNumber - IMAGES_PER_PAGE_COUNT }
+      pagination: { size: PAGE_SIZE, offset: PAGE_SIZE * pageNumber - PAGE_SIZE }
     });
 
   // create a thumbnail for each image and apply it to the image object
@@ -74,7 +74,7 @@ export default async function Page({
     imageCount: tagImageCount
   } as TagWithImageCount;
 
-  const totalNumberOfPages = Math.ceil(tagImageCount / IMAGES_PER_PAGE_COUNT);
+  const totalNumberOfPages = Math.ceil(tagImageCount / PAGE_SIZE);
 
   const page = {
     pageNumber,

@@ -13,6 +13,7 @@ import {
   Button,
   Card,
   CardBody,
+  CardFooter,
   CardHeader,
   Flex,
   HStack,
@@ -30,6 +31,7 @@ import {
   Tooltip
 } from '@chakra-ui/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/router';
 import { useCallback, useState } from 'react';
 import { HiOutlineFingerPrint, HiOutlineLogout } from 'react-icons/hi';
 import { encodeFunctionData } from 'viem';
@@ -55,6 +57,7 @@ const iframeCss = `
 export const UserCard = () => {
   const { signer, user, account } = useSignerContext();
   const { client } = useAccountContext();
+  const router = useRouter();
 
   const [hasClosedPrivateKeyModal, setHasClosedPrivateKeyModal] = useState(false);
   const closePrivateKeyModal = useCallback(() => setHasClosedPrivateKeyModal(true), []);
@@ -126,6 +129,11 @@ export const UserCard = () => {
     }
   });
 
+  const goHome = () => {
+    if (!account) return;
+    return router.push(`/${account.address}/nfts`);
+  };
+
   return (
     <Card minW="500px">
       <CardHeader>
@@ -196,6 +204,13 @@ export const UserCard = () => {
           </Flex>
         )}
       </CardBody>
+      <CardFooter>
+        <Flex>
+          <Button bg="primary" flex={1} h="40px" flexDirection="row" onClick={goHome} spinnerPlacement="end">
+            Go Home
+          </Button>
+        </Flex>
+      </CardFooter>
       <Modal
         isOpen={!!storagePrivateKey && !hasClosedPrivateKeyModal}
         closeOnOverlayClick={false}

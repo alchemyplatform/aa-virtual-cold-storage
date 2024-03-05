@@ -3,7 +3,7 @@
 import { SignerContextProvider } from '@/context/signer';
 import { GlobalStyle } from '@/theme/globalstyles';
 import { default as theme } from '@/theme/theme';
-import { getRpcUrl } from '@/utils/rpc';
+import { getRpcUrl } from '@/utils/alchemy';
 import { CacheProvider } from '@chakra-ui/next-js';
 import { ChakraProvider, ColorModeScript, extendTheme } from '@chakra-ui/react';
 import { Global } from '@emotion/react';
