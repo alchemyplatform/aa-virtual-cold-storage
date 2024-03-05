@@ -56,7 +56,14 @@ function Page({ params: { address, id } }: { params: { address: Address; id: str
   });
 
   const unlockNft = null!;
-  const lockCollection = null!;
+  const lockCollection = useMutation({
+    mutationFn: async () => {
+      const { hash } = await client.lockErc721Collection({
+        args: [[{ contractAddress: address , duration: LOCK_DURATION }]]
+      });
+      await waitForUserOp(client, hash);
+    }
+  });
   const unlockCollection = null!;
   const transfer = null!;
   const transferWithStorageKey = null!;
