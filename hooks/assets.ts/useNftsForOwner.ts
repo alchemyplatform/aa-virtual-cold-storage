@@ -1,9 +1,12 @@
-import { alchemy } from '@/utils/alchemy';
+import { getAlchemySettings } from '@/utils/alchemy';
 import { AlchemySmartAccountClient, alchemyEnhancedApiActions } from '@alchemy/aa-alchemy';
 import { useQuery } from '@tanstack/react-query';
+import { Alchemy } from 'alchemy-sdk';
 import { remove } from 'lodash';
 import { useMemo } from 'react';
 import { Address } from 'viem';
+
+const alchemy = new Alchemy(getAlchemySettings());
 
 // TODO replace with react-query infinite query for pagination
 const useNftsForOwner = ({ client, address }: { client: AlchemySmartAccountClient; address: Address }) => {

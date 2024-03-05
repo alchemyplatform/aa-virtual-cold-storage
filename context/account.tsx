@@ -2,7 +2,7 @@
 
 import { env } from '@/env.mjs';
 import { ColdStoragePluginActions, coldStoragePluginActions } from '@/plugin';
-import { alchemy } from '@/utils/alchemy';
+import { getAlchemySettings } from '@/utils/alchemy';
 import { publicClient } from '@/utils/client';
 import {
   AccountLoupeActions,
@@ -20,6 +20,7 @@ import {
   alchemyEnhancedApiActions,
   createAlchemySmartAccountClient
 } from '@alchemy/aa-alchemy';
+import { Alchemy } from 'alchemy-sdk';
 import { PropsWithChildren, createContext, useContext, useState } from 'react';
 import type { Chain, Transport } from 'viem';
 
@@ -35,6 +36,8 @@ type AccountContextType = {
       AccountLoupeActions<MultiOwnerModularAccount<AlchemySigner>>
   >;
 };
+
+const alchemy = new Alchemy(getAlchemySettings());
 
 const AccountContext = createContext<AccountContextType | undefined>(undefined);
 

@@ -1,14 +1,14 @@
 'use client';
 
-import {useState} from 'react';
 import { AccountContextProvider, useAccountContext } from '@/context/account';
 import { useSignerContext } from '@/context/signer';
 import useRequestPrivateKey from '@/hooks/useStorageKeySigner';
 import { waitForUserOp } from '@/utils/userOps';
+import { freelyMintableNftAbi } from '@/utils/wagmi';
 import { Box, Button, Image, Input, Text } from '@chakra-ui/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Alchemy, Network } from 'alchemy-sdk';
-import { freelyMintableNftAbi } from '@/utils/wagmi';
+import { useState } from 'react';
 import { Address, encodeFunctionData } from 'viem';
 
 const alchemy = new Alchemy({ network: Network.ARB_SEPOLIA, apiKey: '6-7bbRdhqAvOKomY2JhAladgpGf7AQzR' });
@@ -44,10 +44,8 @@ function Page({ params: { address, id } }: { params: { address: Address; id: str
       return { imageSrc: image.cachedUrl, name };
     }
   });
-  const [transferAddress, setTransferAddress] = useState("");
+  const [transferAddress, setTransferAddress] = useState('');
   const handleTransferAddressChange = (event) => setTransferAddress(event.target.value);
-
-
 
   // const lockExpiry = useQuery({
   //   queryKey: ['']
@@ -75,7 +73,7 @@ function Page({ params: { address, id } }: { params: { address: Address; id: str
   const lockCollection = useMutation({
     mutationFn: async () => {
       const { hash } = await client.lockErc721Collection({
-        args: [[{ contractAddress: address , duration: LOCK_DURATION }]]
+        args: [[{ contractAddress: address, duration: LOCK_DURATION }]]
       });
       await waitForUserOp(client, hash);
     }
@@ -105,9 +103,7 @@ function Page({ params: { address, id } }: { params: { address: Address; id: str
       await waitForUserOp(client, hash);
     }
   });
-  
-  
-  
+
   const transferWithStorageKey = null!;
 
   if (nftError) {
