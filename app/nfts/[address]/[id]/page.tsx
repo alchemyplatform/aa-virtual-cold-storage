@@ -3,6 +3,7 @@
 import {useState} from 'react';
 import { AccountContextProvider, useAccountContext } from '@/context/account';
 import { useSignerContext } from '@/context/signer';
+import useRequestPrivateKey from '@/hooks/useStorageKeySigner';
 import { waitForUserOp } from '@/utils/userOps';
 import { Box, Button, Image, Input, Text } from '@chakra-ui/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -58,6 +59,15 @@ function Page({ params: { address, id } }: { params: { address: Address; id: str
         args: [[{ token: { contractAddress: address, tokenId: BigInt(id) }, duration: LOCK_DURATION }]]
       });
       await waitForUserOp(client, hash);
+    }
+  });
+
+  const { requestPrivateKey, modal: privateKeyModal } = useRequestPrivateKey();
+
+  const { mutate: tryTheKey } = useMutation({
+    mutationFn: async () => {
+      const privateKey = await requestPrivateKey().catch((e) => console.error(e));
+      console.log({ privateKey });
     }
   });
 
@@ -119,7 +129,8 @@ function Page({ params: { address, id } }: { params: { address: Address; id: str
         <Button>Transfer</Button>
       </Box>
       <Button>Lock</Button>
-      <Button>Unlock</Button>
+      <Button onClick={() => tryTheKey()}>Unlock</Button>
+      {privateKeyModal}
     </Box>
   );
 }
