@@ -2,7 +2,7 @@
 
 import { AccountContextProvider, useAccountContext } from '@/context/account';
 import { useSignerContext } from '@/context/signer';
-import useRequestPrivateKey from '@/hooks/useStorageKeySigner';
+import useRequestStorageKeyAccount from '@/hooks/useRequestStorageKeyAccount';
 import { waitForUserOp } from '@/utils/userOps';
 import { freelyMintableNftAbi } from '@/utils/wagmi';
 import { Box, Button, Image, Input, Text } from '@chakra-ui/react';
@@ -60,12 +60,12 @@ function Page({ params: { address, id } }: { params: { address: Address; id: str
     }
   });
 
-  const { requestPrivateKey, modal: privateKeyModal } = useRequestPrivateKey();
+  const { requestStorageKeyAccount, modal: privateKeyModal } = useRequestStorageKeyAccount(account?.address ?? '0x');
 
   const { mutate: tryTheKey } = useMutation({
     mutationFn: async () => {
-      const privateKey = await requestPrivateKey().catch((e) => console.error(e));
-      console.log({ privateKey });
+      const storageKeyAccount = await requestStorageKeyAccount().catch((e) => console.error(e));
+      console.log({ storageKeyAccount });
     }
   });
 

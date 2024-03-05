@@ -31,7 +31,7 @@ import {
   Tooltip
 } from '@chakra-ui/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { HiOutlineFingerPrint, HiOutlineLogout } from 'react-icons/hi';
 import { encodeFunctionData } from 'viem';
