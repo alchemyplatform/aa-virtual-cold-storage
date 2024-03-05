@@ -104,6 +104,17 @@ interface IColdStoragePlugin {
         view
         returns (bool);
 
+    /// @notice Return how much longer a token is locked for.
+    /// @param account The account on which to check if the token is locked.
+    /// @param collection The ERC721 contract address.
+    /// @param tokenId The ERC721 token id.
+    /// @return duration that the token is locked, 0 if it is not locked.
+    function getERC721TokenLockedDuration(address account, address collection, uint256 tokenId)
+        external
+        view
+        override
+        returns (uint48)
+
     /// @notice Returns all the active locks for the account.
     /// @param account SCA to get all the locks for
     /// @return allDuration The duration of the lock on all ERC721 tokens, 0 if there is no lock

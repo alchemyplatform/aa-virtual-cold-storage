@@ -15,6 +15,7 @@ import {
     ManifestExecutionHook
 } from "modular-account/interfaces/IPlugin.sol";
 import {ERC721LockMapLib} from "./ERC721LockMapLib.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     using ERC721LockMapLib for ERC721LockMapLib.ERC721LockMap;
@@ -139,6 +140,17 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
         return erc721AllLocks[account] > block.timestamp
             || erc721Locks[msg.sender].get(true, collection, 0).lockEndTime > block.timestamp
             || erc721Locks[msg.sender].get(false, collection, tokenId).lockEndTime > block.timestamp;
+    }
+
+    /// @inheritdoc IColdStoragePlugin
+    function getERC721TokenLockedDuration(address account, address collection, uint256 tokenId)
+        external
+        view
+        override
+        returns (uint48)
+    {
+        uint256 longestLock = Math.max(Math.max(erc721AllLocks[account], erc721Locks[msg.sender].get(true, collection, 0).lockEndTime), erc721Locks[msg.sender].get(false, collection, tokenId).lockEndTime);
+        return longestLock > block.timestamp ? uint48(longestLock - block.timestamp) : 0;
     }
 
     /// @inheritdoc IColdStoragePlugin
