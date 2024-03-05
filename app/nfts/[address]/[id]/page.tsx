@@ -1,12 +1,14 @@
 'use client';
 
+import {useState} from 'react';
 import { AccountContextProvider, useAccountContext } from '@/context/account';
 import { useSignerContext } from '@/context/signer';
 import { waitForUserOp } from '@/utils/userOps';
 import { Box, Button, Image, Input, Text } from '@chakra-ui/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Alchemy, Network } from 'alchemy-sdk';
-import { Address } from 'viem';
+import { freelyMintableNftAbi } from '@/utils/wagmi';
+import { Address, encodeFunctionData } from 'viem';
 
 const alchemy = new Alchemy({ network: Network.ARB_SEPOLIA, apiKey: '6-7bbRdhqAvOKomY2JhAladgpGf7AQzR' });
 const LOCK_DURATION = 600; // Ten minutes
@@ -41,6 +43,10 @@ function Page({ params: { address, id } }: { params: { address: Address; id: str
       return { imageSrc: image.cachedUrl, name };
     }
   });
+  const [transferAddress, setTransferAddress] = useState("");
+  const handleTransferAddressChange = (event) => setTransferAddress(event.target.value);
+
+
 
   // const lockExpiry = useQuery({
   //   queryKey: ['']
@@ -65,7 +71,33 @@ function Page({ params: { address, id } }: { params: { address: Address; id: str
     }
   });
   const unlockCollection = null!;
-  const transfer = null!;
+  const transfer = useMutation({
+    mutationFn: async () => {
+      if (account == null) {
+        throw new Error('Account is null');
+      }
+      if (!/^0x[a-fA-F0-9]+$/.test(transferAddress)) {
+        throw new Error('Invalid transferAddress');
+      }
+      const { hash } = await client.sendUserOperation({
+        account,
+        uo: [
+          {
+            target: address,
+            data: encodeFunctionData({
+              abi: freelyMintableNftAbi,
+              functionName: 'safeTransferFrom',
+              args: [account.address, transferAddress as Address, BigInt(id)]
+            })
+          }
+        ]
+      });
+      await waitForUserOp(client, hash);
+    }
+  });
+  
+  
+  
   const transferWithStorageKey = null!;
 
   if (nftError) {
@@ -83,7 +115,7 @@ function Page({ params: { address, id } }: { params: { address: Address; id: str
       <Image src={imageSrc} />
       <Text>{name}</Text>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <Input placeholder="Enter address…" />
+        <Input placeholder="Enter address…" value={transferAddress} onChange={handleTransferAddressChange} />
         <Button>Transfer</Button>
       </Box>
       <Button>Lock</Button>
