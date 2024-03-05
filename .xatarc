@@ -1,6 +1,0 @@
-{
-  "databaseURL": "https://alchemy-o4v05e.us-west-2.xata.sh/db/colde-storage-plugin",
-  "codegen": {
-    "output": "utils/xata.ts"
-  }
-}

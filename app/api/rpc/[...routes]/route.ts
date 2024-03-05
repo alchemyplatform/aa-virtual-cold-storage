@@ -12,7 +12,7 @@ export async function POST(req: Request, { params }: { params: { routes: string[
   const res = await fetch(env.ALCHEMY_API_URL + `/${params.routes.join('/')}`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${env.ALCHEMY_API_KEY}`,
+      Authorization: `Bearer ${'6-7bbRdhqAvOKomY2JhAladgpGf7AQzR' /*env.ALCHEMY_API_KEY*/}`,
       ...req.headers
     },
     body: JSON.stringify(body)
