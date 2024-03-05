@@ -3,13 +3,15 @@
 import { AccountContextProvider, useAccountContext } from '@/context/account';
 import { useSignerContext } from '@/context/signer';
 import useRequestStorageKeyAccount from '@/hooks/useRequestStorageKeyAccount';
+import { ColdStoragePluginAbi } from '@/plugin';
+import { COLD_STORAGE_PLUGIN_ADDRESS } from '@/utils/constants';
 import { waitForUserOp } from '@/utils/userOps';
 import { freelyMintableNftAbi } from '@/utils/wagmi';
 import { Box, Button, Image, Input, Text } from '@chakra-ui/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Alchemy, Network } from 'alchemy-sdk';
-import { useState } from 'react';
-import { Address, encodeFunctionData } from 'viem';
+import { ChangeEvent, useState } from 'react';
+import { Address, encodeFunctionData, getContract } from 'viem';
 
 const alchemy = new Alchemy({ network: Network.ARB_SEPOLIA, apiKey: '6-7bbRdhqAvOKomY2JhAladgpGf7AQzR' });
 const LOCK_DURATION = 600; // Ten minutes
@@ -34,7 +36,7 @@ export default function WrappedPage({ params }: { params: { address: Address; id
 }
 
 function Page({ params: { address, id } }: { params: { address: Address; id: string } }) {
-  const { signer, user, account } = useSignerContext();
+  const { account } = useSignerContext();
   const { client } = useAccountContext();
 
   const { data: nftData, error: nftError } = useQuery({
@@ -45,46 +47,85 @@ function Page({ params: { address, id } }: { params: { address: Address; id: str
     }
   });
   const [transferAddress, setTransferAddress] = useState('');
-  const handleTransferAddressChange = (event) => setTransferAddress(event.target.value);
+  const handleTransferAddressChange = (event: ChangeEvent<HTMLInputElement>) => setTransferAddress(event.target.value);
 
-  // const lockExpiry = useQuery({
-  //   queryKey: ['']
-  // });
+  const locks = useQuery({
+    queryKey: ['all-locks', address, id],
+    queryFn: async () => {
+      if (!account) {
+        throw new Error('Account is null');
+      }
+      const plugin = getContract({ abi: ColdStoragePluginAbi, address: COLD_STORAGE_PLUGIN_ADDRESS, client });
+      const [allDuration, collectionLocks, tokenLocks] = await plugin.read.getERC721Locks([account.address]);
+      const isAllLocked = allDuration > 0;
+      const isCollectionLocked = collectionLocks.some((lock) => lock.contractAddress === address && lock.duration > 0);
+      const isTokenLocked = tokenLocks.some(
+        (lock) => lock.token.contractAddress === address && lock.token.tokenId === BigInt(id) && lock.duration > 0
+      );
+      return { isAllLocked, isCollectionLocked, isTokenLocked };
+    }
+  });
 
-  const { mutate: lockNft } = useMutation({
+  const lockNft = useMutation({
     mutationFn: async () => {
+      if (!account) {
+        throw new Error('Account is null');
+      }
       const { hash } = await client.lockErc721Token({
+        account,
         args: [[{ token: { contractAddress: address, tokenId: BigInt(id) }, duration: LOCK_DURATION }]]
       });
       await waitForUserOp(client, hash);
+      void locks.refetch();
     }
   });
 
   const { requestStorageKeyAccount, modal: privateKeyModal } = useRequestStorageKeyAccount(account?.address ?? '0x');
 
-  const { mutate: tryTheKey } = useMutation({
+  const unlockNft = useMutation({
     mutationFn: async () => {
-      const storageKeyAccount = await requestStorageKeyAccount().catch((e) => console.error(e));
-      console.log({ storageKeyAccount });
+      const account = await requestStorageKeyAccount();
+      const { hash } = await client.unlockErc721Token({
+        account,
+        args: [[{ contractAddress: address, tokenId: BigInt(id) }]]
+      });
+      await waitForUserOp(client, hash);
+      void locks.refetch();
     }
   });
 
-  const unlockNft = null!;
   const lockCollection = useMutation({
     mutationFn: async () => {
+      if (!account) {
+        throw new Error('Account is null');
+      }
       const { hash } = await client.lockErc721Collection({
+        account,
         args: [[{ contractAddress: address, duration: LOCK_DURATION }]]
       });
       await waitForUserOp(client, hash);
+      void locks.refetch();
     }
   });
-  const unlockCollection = null!;
+
+  const unlockCollection = useMutation({
+    mutationFn: async () => {
+      const account = await requestStorageKeyAccount();
+      const { hash } = await client.unlockErc721Collection({
+        account,
+        args: [[address]]
+      });
+      await waitForUserOp(client, hash);
+      void locks.refetch();
+    }
+  });
+
   const transfer = useMutation({
     mutationFn: async () => {
       if (account == null) {
         throw new Error('Account is null');
       }
-      if (!/^0x[a-fA-F0-9]+$/.test(transferAddress)) {
+      if (!/^0x[a-fA-F0-9]{40}$/.test(transferAddress)) {
         throw new Error('Invalid transferAddress');
       }
       const { hash } = await client.sendUserOperation({
@@ -104,17 +145,42 @@ function Page({ params: { address, id } }: { params: { address: Address; id: str
     }
   });
 
-  const transferWithStorageKey = null!;
+  const transferWithStorageKey = useMutation({
+    mutationFn: async () => {
+      const account = await requestStorageKeyAccount();
+      const { hash } = await client.executeWithStorageKey({
+        account,
+        args: [
+          [
+            {
+              target: address,
+              value: BigInt(0),
+              data: encodeFunctionData({
+                abi: freelyMintableNftAbi,
+                functionName: 'safeTransferFrom',
+                args: [account.address, transferAddress as Address, BigInt(id)]
+              })
+            }
+          ]
+        ]
+      });
+      await waitForUserOp(client, hash);
+    }
+  });
 
   if (nftError) {
     return <Text>Nft load failed</Text>;
   }
+  if (locks.error) {
+    return <Text>Locks load failed</Text>;
+  }
 
-  if (!nftData) {
+  if (!nftData || !locks.data) {
     return undefined;
   }
 
   const { imageSrc, name } = nftData;
+  const { isCollectionLocked, isTokenLocked } = locks.data;
 
   return (
     <Box maxW={500} mx="auto">
@@ -122,10 +188,31 @@ function Page({ params: { address, id } }: { params: { address: Address; id: str
       <Text>{name}</Text>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Input placeholder="Enter address…" value={transferAddress} onChange={handleTransferAddressChange} />
-        <Button>Transfer</Button>
+        <Button
+          isDisabled={transfer.isPending && !transferAddress.match(/^0x[0-9a-fA-F]{40}$/)}
+          onClick={() => transfer.mutate()}
+        >
+          {transfer.isPending ? 'Transferring…' : 'Transfer'}
+        </Button>
+        <Button
+          isDisabled={transferWithStorageKey.isPending && !transferAddress.match(/^0x[0-9a-fA-F]{40}$/)}
+          onClick={() => transferWithStorageKey.mutate()}
+        >
+          {transferWithStorageKey.isPending ? 'Transferring…' : 'Transfer with storage key'}
+        </Button>
       </Box>
-      <Button>Lock</Button>
-      <Button onClick={() => tryTheKey()}>Unlock</Button>
+      <Button isDisabled={lockNft.isPending || isTokenLocked} onClick={() => lockNft.mutate()}>
+        {lockNft.isPending ? 'Locking…' : 'Lock'}
+      </Button>
+      <Button isDisabled={unlockNft.isPending || !isTokenLocked} onClick={() => unlockNft.mutate()}>
+        {unlockNft.isPending ? 'Unlocking…' : 'Unlock'}
+      </Button>
+      <Button isDisabled={lockCollection.isPending || isCollectionLocked} onClick={() => lockCollection.mutate()}>
+        {lockCollection.isPending ? 'Locking…' : 'Lock collection'}
+      </Button>
+      <Button isDisabled={unlockCollection.isPending || !isCollectionLocked} onClick={() => unlockCollection.mutate()}>
+        {unlockCollection.isPending ? 'Unlocking…' : 'Unlock collection'}
+      </Button>
       {privateKeyModal}
     </Box>
   );
