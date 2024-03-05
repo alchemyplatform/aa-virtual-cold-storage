@@ -3,7 +3,9 @@ pragma solidity ^0.8.22;
 
 import {BasePlugin} from "modular-account/plugins/BasePlugin.sol";
 import {PluginManifest, PluginMetadata} from "modular-account/interfaces/IPlugin.sol";
+import {UserOperation} from "modular-account/interfaces/erc4337/UserOperation.sol";
 import {IColdStoragePlugin} from "./IColdStoragePlugin.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {Call, IStandardExecutor} from "modular-account/interfaces/IStandardExecutor.sol";
 import {IPluginExecutor} from "modular-account/interfaces/IPluginExecutor.sol";
@@ -19,6 +21,7 @@ import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     using ERC721LockMapLib for ERC721LockMapLib.ERC721LockMap;
+    using ECDSA for bytes32;
 
     string internal constant _NAME = "Cold Storage Plugin";
     string internal constant _VERSION = "0.1.0";
@@ -149,7 +152,10 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
         override
         returns (uint48)
     {
-        uint256 longestLock = Math.max(Math.max(erc721AllLocks[account], erc721Locks[msg.sender].get(true, collection, 0).lockEndTime), erc721Locks[msg.sender].get(false, collection, tokenId).lockEndTime);
+        uint256 longestLock = Math.max(
+            Math.max(erc721AllLocks[account], erc721Locks[msg.sender].get(true, collection, 0).lockEndTime),
+            erc721Locks[msg.sender].get(false, collection, tokenId).lockEndTime
+        );
         return longestLock > block.timestamp ? uint48(longestLock - block.timestamp) : 0;
     }
 
@@ -223,6 +229,24 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     }
 
     /// @inheritdoc BasePlugin
+    function userOpValidationFunction(uint8 functionId, UserOperation calldata userOp, bytes32 userOpHash)
+        external
+        view
+        override
+        returns (uint256)
+    {
+        if (functionId == uint8(FunctionId.USER_OP_VALIDATION_STORAGE_KEY)) {
+            (address signer, ECDSA.RecoverError error) =
+                userOpHash.toEthSignedMessageHash().tryRecover(userOp.signature);
+            if (error == ECDSA.RecoverError.NoError && signer == storageKeys[msg.sender]) {
+                return 0;
+            }
+            return 1;
+        }
+        revert NotImplemented(msg.sig, functionId);
+    }
+
+    /// @inheritdoc BasePlugin
     function runtimeValidationFunction(uint8 functionId, address sender, uint256, bytes calldata)
         external
         view
@@ -237,7 +261,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
     }
 
     /// @inheritdoc BasePlugin
-    function preExecutionHook(uint8 functionId, address sender, uint256 /* value */, bytes calldata data)
+    function preExecutionHook(uint8 functionId, address sender, uint256, /* value */ bytes calldata data)
         external
         view
         override
@@ -249,7 +273,9 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
             selector == IStandardExecutor.execute.selector
                 || selector == IPluginExecutor.executeFromPluginExternal.selector
         ) {
-            if (sender == address(this)) { // Allow for any executeFromPluginExternal calls from the plugin itself since it has already passed validation
+            if (sender == address(this)) {
+                // Allow for any executeFromPluginExternal calls from the plugin itself since it has already passed
+                // validation
                 return bytes("");
             }
             (address executeTarget, /* uint256 executeValue */, bytes memory executeData) =
@@ -476,7 +502,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
         return interfaceId == type(IColdStoragePlugin).interfaceId || super.supportsInterface(interfaceId);
     }
 
-    function isErc721LockedFunction(bytes4 selector) internal view returns (bool) {
+    function isErc721LockedFunction(bytes4 selector) internal pure returns (bool) {
         return selector == IERC721.approve.selector || selector == SAFE_TRANSFER_FROM
             || selector == SAFE_TRANSFER_FROM_WITH_DATA || selector == IERC721.transferFrom.selector;
     }

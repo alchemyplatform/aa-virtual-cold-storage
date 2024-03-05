@@ -50,7 +50,7 @@ function Page({ params: { address, id } }: { params: { address: Address; id: str
   const handleTransferAddressChange = (event: ChangeEvent<HTMLInputElement>) => setTransferAddress(event.target.value);
 
   const locks = useQuery({
-    queryKey: ['all-locks', address, id],
+    queryKey: ['all-locks'],
     queryFn: async () => {
       if (!account) {
         throw new Error('Account is null');
@@ -186,8 +186,8 @@ function Page({ params: { address, id } }: { params: { address: Address; id: str
     <Box maxW={500} mx="auto">
       <Image src={imageSrc} />
       <Text>{name}</Text>
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <Input placeholder="Enter address…" value={transferAddress} onChange={handleTransferAddressChange} />
+      <Input placeholder="Enter address…" value={transferAddress} onChange={handleTransferAddressChange} />
+      <Box mt={1}>
         <Button
           isDisabled={transfer.isPending && !transferAddress.match(/^0x[0-9a-fA-F]{40}$/)}
           onClick={() => transfer.mutate()}
@@ -195,24 +195,33 @@ function Page({ params: { address, id } }: { params: { address: Address; id: str
           {transfer.isPending ? 'Transferring…' : 'Transfer'}
         </Button>
         <Button
+          ml={1}
           isDisabled={transferWithStorageKey.isPending && !transferAddress.match(/^0x[0-9a-fA-F]{40}$/)}
           onClick={() => transferWithStorageKey.mutate()}
         >
           {transferWithStorageKey.isPending ? 'Transferring…' : 'Transfer with storage key'}
         </Button>
       </Box>
-      <Button isDisabled={lockNft.isPending || isTokenLocked} onClick={() => lockNft.mutate()}>
-        {lockNft.isPending ? 'Locking…' : 'Lock'}
-      </Button>
-      <Button isDisabled={unlockNft.isPending || !isTokenLocked} onClick={() => unlockNft.mutate()}>
-        {unlockNft.isPending ? 'Unlocking…' : 'Unlock'}
-      </Button>
-      <Button isDisabled={lockCollection.isPending || isCollectionLocked} onClick={() => lockCollection.mutate()}>
-        {lockCollection.isPending ? 'Locking…' : 'Lock collection'}
-      </Button>
-      <Button isDisabled={unlockCollection.isPending || !isCollectionLocked} onClick={() => unlockCollection.mutate()}>
-        {unlockCollection.isPending ? 'Unlocking…' : 'Unlock collection'}
-      </Button>
+      <Box mt={4}>
+        <Button isDisabled={lockNft.isPending || isTokenLocked} onClick={() => lockNft.mutate()}>
+          {lockNft.isPending ? 'Locking…' : 'Lock'}
+        </Button>
+        <Button ml={1} isDisabled={unlockNft.isPending || !isTokenLocked} onClick={() => unlockNft.mutate()}>
+          {unlockNft.isPending ? 'Unlocking…' : 'Unlock'}
+        </Button>
+      </Box>
+      <Box mt={4}>
+        <Button isDisabled={lockCollection.isPending || isCollectionLocked} onClick={() => lockCollection.mutate()}>
+          {lockCollection.isPending ? 'Locking…' : 'Lock collection'}
+        </Button>
+        <Button
+          ml={1}
+          isDisabled={unlockCollection.isPending || !isCollectionLocked}
+          onClick={() => unlockCollection.mutate()}
+        >
+          {unlockCollection.isPending ? 'Unlocking…' : 'Unlock collection'}
+        </Button>
+      </Box>
       {privateKeyModal}
     </Box>
   );

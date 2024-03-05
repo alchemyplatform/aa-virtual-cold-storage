@@ -112,8 +112,7 @@ interface IColdStoragePlugin {
     function getERC721TokenLockedDuration(address account, address collection, uint256 tokenId)
         external
         view
-        override
-        returns (uint48)
+        returns (uint48);
 
     /// @notice Returns all the active locks for the account.
     /// @param account SCA to get all the locks for
