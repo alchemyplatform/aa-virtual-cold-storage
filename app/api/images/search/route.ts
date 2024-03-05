@@ -2,8 +2,8 @@ import { getXataClient } from '@/utils/xata';
 
 // Next.js edge runtime
 // https://nextjs.org/docs/pages/api-reference/edge
-export const runtime = 'edge';
-export const preferredRegion = 'iad1';
+// export const runtime = 'edge';
+// export const preferredRegion = 'iad1';
 
 const xata = getXataClient();
 

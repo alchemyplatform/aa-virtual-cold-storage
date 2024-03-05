@@ -1,12 +1,12 @@
 import { Page } from '@/components/nfts';
 import { getAlchemySettings } from '@/utils/alchemy';
 import { PAGE_SIZE } from '@/utils/constants';
-import { Alchemy, NftFilters, NftOrdering, OwnedNftsResponse } from 'alchemy-sdk';
+import { Alchemy, NftOrdering, OwnedNftsResponse } from 'alchemy-sdk';
 
 // Next.js edge runtime
 // https://nextjs.org/docs/pages/api-reference/edge
-export const runtime = 'edge';
-export const preferredRegion = 'iad1';
+// export const runtime = 'edge';
+// export const preferredRegion = 'iad1';
 
 const alchemy = new Alchemy(getAlchemySettings());
 
@@ -24,7 +24,9 @@ export async function GET(req: Request) {
   }: OwnedNftsResponse = await alchemy!.nft.getNftsForOwner(address, {
     pageKey,
     pageSize,
-    excludeFilters: [NftFilters.SPAM],
+    excludeFilters: [
+      /*NftFilters.SPAM*/
+    ],
     orderBy: NftOrdering.TRANSFERTIME
   });
   const totalNumberOfPages = Math.ceil(totalCount / pageSize);
