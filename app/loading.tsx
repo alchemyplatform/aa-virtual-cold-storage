@@ -1,8 +1,10 @@
-import { HeaderLoading } from '@/components/layout/loading';
+import { Center } from '@chakra-ui/layout';
+import { Spinner } from '@chakra-ui/spinner';
 
 export default function Loading() {
-  const readOnly = process.env.READ_ONLY === 'true';
-
-  // You can add any UI inside Loading, including a Skeleton.
-  return <HeaderLoading readOnly={readOnly} />;
+  return (
+    <Center w="100vw" h="100vh">
+      <Spinner thickness="4px" speed="0.65s" emptyColor="gray.200" color="primary.500" size="3xl" />
+    </Center>
+  );
 }
