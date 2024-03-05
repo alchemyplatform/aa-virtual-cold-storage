@@ -1,10 +1,10 @@
 import { Nfts, Page } from '@/components/nfts';
-import { getAlchemySettings } from '@/utils/alchemy';
+import { getAlchemy } from '@/utils/alchemy';
 import { PAGE_SIZE } from '@/utils/constants';
-import { Alchemy, NftFilters, NftOrdering, OwnedNftsResponse } from 'alchemy-sdk';
+import { NftFilters, NftOrdering, OwnedNftsResponse } from 'alchemy-sdk';
 import { Address } from 'viem';
 
-const alchemy = new Alchemy(getAlchemySettings());
+const alchemy = getAlchemy();
 
 export default async function Page({
   params: { address },
@@ -26,11 +26,12 @@ export default async function Page({
   const totalNumberOfPages = Math.ceil(totalCount / pageSize);
 
   const page: Page = {
+    address,
     pageSize,
     prevPageKey: pageKey,
     nextPageKey,
     totalNumberOfPages
   };
 
-  return <Nfts address={address} items={items} page={page} />;
+  return <Nfts items={items} page={page} />;
 }
