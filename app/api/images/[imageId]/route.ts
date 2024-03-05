@@ -5,8 +5,8 @@ const xata = getXataClient();
 
 // Next.js edge runtime
 // https://nextjs.org/docs/pages/api-reference/edge
-export const runtime = 'edge';
-export const preferredRegion = 'iad1';
+// export const runtime = 'edge';
+// export const preferredRegion = 'iad1';
 
 // A delete function to handle requests to delete an image
 export async function DELETE(request: Request, { params }: { params: { imageId: string } }) {
