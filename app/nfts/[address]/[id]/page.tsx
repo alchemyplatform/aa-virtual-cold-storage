@@ -1,34 +1,35 @@
-import { Image } from '@/components/images/individual';
-import { ImageRecord, TagRecord, getXataClient } from '@/utils/xata';
-import { JSONData } from '@xata.io/client';
-import { compact } from 'lodash';
-import { notFound } from 'next/navigation';
+'use client';
 
-const xata = getXataClient();
+import { Box, Image, Text } from '@chakra-ui/react';
+import { useQuery } from '@tanstack/react-query';
+import { Alchemy, Network } from 'alchemy-sdk';
+import { Address } from 'viem';
 
-const getImage = async (id: string) => {
-  const image = (await xata.db.image.read(id)) as ImageRecord;
-  if (!image?.image) {
+const alchemy = new Alchemy({ network: Network.ARB_SEPOLIA, apiKey: '6-7bbRdhqAvOKomY2JhAladgpGf7AQzR' });
+
+export default function Page({ params: { address, id } }: { params: { address: Address; id: string } }) {
+  const { data, error } = useQuery({
+    queryKey: ['nft-page', address, id],
+    queryFn: async () => {
+      const { image, name } = await alchemy.nft.getNftMetadata(address, id, {});
+      return { imageSrc: image.cachedUrl, name };
+    }
+  });
+
+  if (error) {
+    return <Text>Nft load failed</Text>;
+  }
+
+  if (!data) {
     return undefined;
   }
-  return image.toSerializable();
-};
 
-export default async function Page({ params: { id } }: { params: { id: string } }) {
-  const image = await getImage(id);
-  if (!image) {
-    notFound();
-  }
-  const tagsFromImage = await xata.db['tag-to-image']
-    .filter({
-      'image.id': id
-    })
-    .select(['*', 'tag.*'])
-    .getMany();
+  const { imageSrc, name } = data;
 
-  const tags = compact(tagsFromImage.map((tag) => tag.tag?.toSerializable())) as JSONData<TagRecord>[];
-
-  const readOnly = process.env.READ_ONLY === 'true';
-
-  return <Image image={image} tags={tags} readOnly={readOnly} />;
+  return (
+    <Box>
+      <Image src={imageSrc} />
+      <Text>{name}</Text>
+    </Box>
+  );
 }
