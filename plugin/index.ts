@@ -151,7 +151,7 @@ export type ColdStoragePluginActions<
 > = ExecutionActions<TAccount> & ManagementActions<TAccount> & ReadAndEncodeActions;
 
 const addresses = {
-  421614: '0x63008C1f1a179C4109C8c176C174106328Bd3521' as Address
+  421614: '0xC29f899065e4e35BB82FB0645F0FEC68C7DD8840' as Address
 } as Record<number, Address>;
 
 export const ColdStoragePlugin: Plugin<typeof ColdStoragePluginAbi> = {
