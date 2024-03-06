@@ -8,10 +8,7 @@ export const env = createEnv({
    */
   server: {
     NODE_ENV: z.enum(['development', 'test', 'production']),
-    ALCHEMY_API_KEY: z.string().min(1),
-    ALCHEMY_API_URL: z.string().url(),
-    ALCHEMY_RPC_URL: z.string().url(),
-    ROOT_ORG_ID: z.string().optional()
+    ALCHEMY_API_KEY: z.string().min(1)
   },
 
   /**
@@ -30,9 +27,6 @@ export const env = createEnv({
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
     ALCHEMY_API_KEY: process.env.ALCHEMY_API_KEY,
-    ALCHEMY_API_URL: process.env.ALCHEMY_API_URL,
-    ALCHEMY_RPC_URL: process.env.ALCHEMY_RPC_URL,
-    NEXT_PUBLIC_ALCHEMY_GAS_MANAGER_POLICY_ID: process.env.NEXT_PUBLIC_ALCHEMY_GAS_MANAGER_POLICY_ID,
-    ROOT_ORG_ID: process.env.ROOT_ORG_ID
+    NEXT_PUBLIC_ALCHEMY_GAS_MANAGER_POLICY_ID: process.env.NEXT_PUBLIC_ALCHEMY_GAS_MANAGER_POLICY_ID
   }
 });

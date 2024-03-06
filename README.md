@@ -14,9 +14,6 @@ After you run init, your `.env` file should look like this
 ```bash
 NODE_ENV=development
 
-ALCHEMY_RPC_URL=<YOUR_ALCHEMY_RPC_URL>
-ALCHEMY_API_URL=<YOUR_ALCHEMY_API_URL>
-
 # https://dashboard.alchemy.com/apps
 ALCHEMY_API_KEY=<YOUR_ALCHEMY_API_KEY>
 

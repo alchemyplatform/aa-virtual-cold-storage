@@ -39,10 +39,18 @@ export const SignerContextProvider = ({
   const [_signer] = useState<AlchemySigner | undefined>(() => {
     if (typeof window === 'undefined') return undefined;
 
-    const iframeContainer = document.createElement('div');
-    iframeContainer.id = signerConfig.client.iframeConfig.iframeContainerId;
-    iframeContainer.style.display = 'none';
-    document.body.appendChild(iframeContainer);
+    const { iframeContainerId } = signerConfig.client.iframeConfig;
+    let iframeContainer = document.getElementById(iframeContainerId);
+
+    if (iframeContainer !== null) {
+      iframeContainer.innerHTML = '';
+      iframeContainer.style.display = 'none';
+    } else {
+      iframeContainer = document.createElement('div');
+      iframeContainer.id = signerConfig.client.iframeConfig.iframeContainerId;
+      iframeContainer.style.display = 'none';
+      document.body.appendChild(iframeContainer);
+    }
 
     return new AlchemySigner(signerConfig);
   });
