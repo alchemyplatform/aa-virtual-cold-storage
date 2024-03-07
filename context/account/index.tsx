@@ -18,31 +18,39 @@ import {
   BaseAlchemyActions,
   createAlchemySmartAccountClient
 } from '@alchemy/aa-alchemy';
-import { PropsWithChildren, createContext, useContext, useState } from 'react';
+import { PropsWithChildren, createContext, useContext, useEffect, useState } from 'react';
 import type { Chain, Transport } from 'viem';
+import { useGlobalModalContext } from '../app/modal';
 
 type AccountContextType = {
   client: AlchemySmartAccountClient<
     Transport,
     Chain | undefined,
-    MultiOwnerModularAccount<AlchemySigner>,
-    BaseAlchemyActions<Chain | undefined, MultiOwnerModularAccount<AlchemySigner>> &
-      MultiOwnerPluginActions<MultiOwnerModularAccount<AlchemySigner>> &
-      ColdStoragePluginActions<MultiOwnerModularAccount<AlchemySigner>> &
-      PluginManagerActions<MultiOwnerModularAccount<AlchemySigner>> &
-      AccountLoupeActions<MultiOwnerModularAccount<AlchemySigner>>
+    MultiOwnerModularAccount<AlchemySigner> | undefined,
+    BaseAlchemyActions<Chain | undefined, MultiOwnerModularAccount<AlchemySigner> | undefined> &
+      MultiOwnerPluginActions<MultiOwnerModularAccount<AlchemySigner> | undefined> &
+      ColdStoragePluginActions<MultiOwnerModularAccount<AlchemySigner> | undefined> &
+      PluginManagerActions<MultiOwnerModularAccount<AlchemySigner> | undefined> &
+      AccountLoupeActions<MultiOwnerModularAccount<AlchemySigner> | undefined>
   >;
 };
 
-const AccountContext = createContext<AccountContextType | undefined>(undefined);
+const defaultClient = createAlchemySmartAccountClient({
+  chain: publicClient.chain,
+  rpcUrl: '/api/rpc',
+  account: undefined,
+  gasManagerConfig: {
+    policyId: env.NEXT_PUBLIC_ALCHEMY_GAS_MANAGER_POLICY_ID
+  }
+})
+  .extend(multiOwnerPluginActions)
+  .extend(coldStoragePluginActions)
+  .extend(pluginManagerActions)
+  .extend(accountLoupeActions);
+const AccountContext = createContext<AccountContextType>({ client: defaultClient });
 
 export const useAccountContext = () => {
   const context = useContext(AccountContext);
-
-  if (context === undefined) {
-    throw new Error('useAccountContext must be used within the AccountProvider');
-  }
-
   return context;
 };
 
@@ -67,6 +75,12 @@ export const AccountContextProvider = ({ children, account }: PropsWithChildren<
       .extend(pluginManagerActions)
       .extend(accountLoupeActions);
   });
+
+  const { store, setClient } = useGlobalModalContext();
+
+  useEffect(() => {
+    if (!store.client && client) setClient(client);
+  }, [client, setClient, store.client]);
 
   return <AccountContext.Provider value={{ client: client! }}>{children}</AccountContext.Provider>;
 };

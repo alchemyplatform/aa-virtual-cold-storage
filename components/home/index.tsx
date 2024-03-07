@@ -1,8 +1,8 @@
 'use client';
 
 import { useAccountContext } from '@/context/account';
-import { useSignerContext } from '@/context/signer';
-import useNftsForOwner, { NftsForOwnerResponse } from '@/hooks/assets.ts/useNftsForOwner';
+import { useSignerContext } from '@/context/account/signer';
+import useNftsForOwner, { NftsForOwnerResponse } from '@/hooks/nft/useNftsForOwner';
 import { Flex } from '@chakra-ui/react';
 import { ArrowButton } from '../base/ArrowButton';
 import { Nfts, Page } from '../nfts';
@@ -22,7 +22,7 @@ export const Home = () => {
     fetchPreviousPage,
     hasPreviousPage,
     isLoading
-  }: NftsForOwnerResponse = useNftsForOwner({ client, address: account!.address });
+  }: NftsForOwnerResponse = useNftsForOwner({ client: client!, address: account!.address });
 
   const page: Page = {
     pageSize,

@@ -1,36 +1,24 @@
 'use client';
 
 import { useAccountContext } from '@/context/account';
-import { useSignerContext } from '@/context/signer';
-import useRequestStorageKeyAccount from '@/hooks/useRequestStorageKeyAccount';
-import { ColdStoragePluginAbi } from '@/plugin';
-import { getAlchemySettings } from '@/utils/alchemy';
-import { COLD_STORAGE_PLUGIN_ADDRESS } from '@/utils/constants';
+import { useSignerContext } from '@/context/account/signer';
+import useStorageKeyAccount from '@/hooks/account/useStorageKeyAccount';
+import useNftMetadata from '@/hooks/nft/useNfftMetadata';
+import { ColdStoragePlugin } from '@/plugin';
 import { waitForUserOp } from '@/utils/userOps';
 import { freelyMintableNftAbi } from '@/utils/wagmi';
-import { alchemyEnhancedApiActions } from '@alchemy/aa-alchemy';
-import { Box, Button, Image, Input, Text } from '@chakra-ui/react';
+import { Box, Button, Image, Input, Skeleton, Text } from '@chakra-ui/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Alchemy } from 'alchemy-sdk';
 import { ChangeEvent, useState } from 'react';
-import { Address, encodeFunctionData, getContract } from 'viem';
+import { Address, encodeFunctionData } from 'viem';
 
-const alchemy = new Alchemy(getAlchemySettings(true));
 const LOCK_DURATION = 600; // Ten minutes
 
 export default function Page({ params: { address, id } }: { params: { address: Address; id: string } }) {
   const { account } = useSignerContext();
   const { client } = useAccountContext();
 
-  const { data: nftData, error: nftError } = useQuery({
-    queryKey: ['nft-page', address, id],
-    queryFn: async () => {
-      const { image, name } = await client
-        .extend(alchemyEnhancedApiActions(alchemy))
-        .nft.getNftMetadata(address, id, {});
-      return { imageSrc: image.cachedUrl, name };
-    }
-  });
+  const { data: nftData, isLoading, error: nftError } = useNftMetadata({ client, address, tokenId: id });
   const [transferAddress, setTransferAddress] = useState('');
   const handleTransferAddressChange = (event: ChangeEvent<HTMLInputElement>) => setTransferAddress(event.target.value);
 
@@ -40,7 +28,7 @@ export default function Page({ params: { address, id } }: { params: { address: A
       if (!account) {
         throw new Error('Account is null');
       }
-      const plugin = getContract({ abi: ColdStoragePluginAbi, address: COLD_STORAGE_PLUGIN_ADDRESS, client });
+      const plugin = ColdStoragePlugin.getContract(client);
       const [allDuration, collectionLocks, tokenLocks] = await plugin.read.getERC721Locks([account.address]);
       const isAllLocked = allDuration > 0;
       const isCollectionLocked = collectionLocks.some((lock) => lock.contractAddress === address && lock.duration > 0);
@@ -65,7 +53,7 @@ export default function Page({ params: { address, id } }: { params: { address: A
     }
   });
 
-  const { requestStorageKeyAccount, modal: privateKeyModal } = useRequestStorageKeyAccount(account?.address ?? '0x');
+  const { requestStorageKeyAccount, modal: privateKeyModal } = useStorageKeyAccount(account?.address ?? '0x');
 
   const unlockNft = useMutation({
     mutationFn: async () => {
@@ -164,44 +152,59 @@ export default function Page({ params: { address, id } }: { params: { address: A
     return undefined;
   }
 
-  const { imageSrc, name } = nftData;
+  const { image, name, contract, tokenId } = nftData ?? {};
   const { isCollectionLocked, isTokenLocked } = locks.data;
 
   return (
     <Box maxW={500} mx="auto">
-      <Image src={imageSrc} />
-      <Text>{name}</Text>
+      <Skeleton isLoaded={!isLoading}>
+        <Image
+          src={image?.cachedUrl ?? image?.pngUrl ?? image?.originalUrl}
+          alt={name ?? `${contract.address}.${tokenId}`}
+        />
+      </Skeleton>
+      <Skeleton isLoaded={!isLoading}>
+        <Text>{name}</Text>
+      </Skeleton>
+
       <Input placeholder="Enter address…" value={transferAddress} onChange={handleTransferAddressChange} />
       <Box mt={1}>
         <Button
-          isDisabled={transfer.isPending && !transferAddress.match(/^0x[0-9a-fA-F]{40}$/)}
+          isDisabled={isLoading || (transfer.isPending && !transferAddress.match(/^0x[0-9a-fA-F]{40}$/))}
           onClick={() => transfer.mutate()}
         >
           {transfer.isPending ? 'Transferring…' : 'Transfer'}
         </Button>
         <Button
           ml={1}
-          isDisabled={transferWithStorageKey.isPending && !transferAddress.match(/^0x[0-9a-fA-F]{40}$/)}
+          isDisabled={isLoading || (transferWithStorageKey.isPending && !transferAddress.match(/^0x[0-9a-fA-F]{40}$/))}
           onClick={() => transferWithStorageKey.mutate()}
         >
           {transferWithStorageKey.isPending ? 'Transferring…' : 'Transfer with storage key'}
         </Button>
       </Box>
       <Box mt={4}>
-        <Button isDisabled={lockNft.isPending || isTokenLocked} onClick={() => lockNft.mutate()}>
+        <Button isDisabled={isLoading || lockNft.isPending || isTokenLocked} onClick={() => lockNft.mutate()}>
           {lockNft.isPending ? 'Locking…' : 'Lock'}
         </Button>
-        <Button ml={1} isDisabled={unlockNft.isPending || !isTokenLocked} onClick={() => unlockNft.mutate()}>
+        <Button
+          ml={1}
+          isDisabled={isLoading || unlockNft.isPending || !isTokenLocked}
+          onClick={() => unlockNft.mutate()}
+        >
           {unlockNft.isPending ? 'Unlocking…' : 'Unlock'}
         </Button>
       </Box>
       <Box mt={4}>
-        <Button isDisabled={lockCollection.isPending || isCollectionLocked} onClick={() => lockCollection.mutate()}>
+        <Button
+          isDisabled={isLoading || lockCollection.isPending || isCollectionLocked}
+          onClick={() => lockCollection.mutate()}
+        >
           {lockCollection.isPending ? 'Locking…' : 'Lock collection'}
         </Button>
         <Button
           ml={1}
-          isDisabled={unlockCollection.isPending || !isCollectionLocked}
+          isDisabled={isLoading || unlockCollection.isPending || !isCollectionLocked}
           onClick={() => unlockCollection.mutate()}
         >
           {unlockCollection.isPending ? 'Unlocking…' : 'Unlock collection'}

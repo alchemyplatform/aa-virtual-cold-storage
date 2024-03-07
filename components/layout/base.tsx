@@ -1,5 +1,7 @@
 'use client';
 
+import { useSignerContext } from '@/context/account/signer';
+import { ModalType, useGlobalModalContext } from '@/context/app/modal';
 import { Link } from '@chakra-ui/next-js';
 import { Flex, Icon, IconButton, Text, Tooltip, useColorMode } from '@chakra-ui/react';
 import { WeatherMoon20Filled, WeatherSunny20Filled } from '@fluentui/react-icons';
@@ -17,7 +19,11 @@ interface BaseLayoutProps {
 
 export const BaseLayout: FC<BaseLayoutProps> = ({ children }) => {
   const { toggleColorMode, colorMode } = useColorMode();
+  const { account } = useSignerContext();
+  const { showModal } = useGlobalModalContext();
+
   const isDark = colorMode === 'dark';
+
   return (
     <Flex flexDir="column" px={8} py={2} maxW={1200} minH="100vh" mx={{ base: 4, lg: 'auto' }}>
       <Flex justifyContent="space-between">
@@ -42,14 +48,17 @@ export const BaseLayout: FC<BaseLayoutProps> = ({ children }) => {
             <IconButton
               aria-label="Your Account"
               variant="ghost"
+              colorScheme="info"
               icon={<Icon as={HiOutlineUser} boxSize={6} />}
-              onClick={toggleColorMode}
+              onClick={() => showModal(ModalType.USER_CARD)}
+              isDisabled={!account}
             />
           </Tooltip>
           <Tooltip label={`Change theme to ${isDark ? 'light' : 'dark'}`} openDelay={500}>
             <IconButton
               aria-label="Change theme"
               variant="ghost"
+              colorScheme="info"
               icon={<Icon as={isDark ? WeatherSunny20Filled : WeatherMoon20Filled} boxSize={5} />}
               onClick={toggleColorMode}
             />

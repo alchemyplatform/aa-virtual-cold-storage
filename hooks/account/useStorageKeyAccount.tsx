@@ -13,10 +13,10 @@ import {
   ModalOverlay,
   Text
 } from '@chakra-ui/react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Address, Hex, custom } from 'viem';
 
-export default function useRequestStorageKeyAccount(accountAddress: Address) {
+export default function useStorageKeyAccount(accountAddress: Address) {
   const [privateKey, setPrivateKey] = useState('');
   const [isOpen, setIsOpen] = useState(false);
 
@@ -53,7 +53,7 @@ export default function useRequestStorageKeyAccount(accountAddress: Address) {
     []
   );
 
-  const isValidPrivateKey = !!privateKey.match(/^0x[0-9a-fA-F]{64}$/);
+  const isValidPrivateKey = useMemo(() => !!privateKey.match(/^0x[0-9a-fA-F]{64}$/), [privateKey]);
 
   const modal = (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -62,11 +62,11 @@ export default function useRequestStorageKeyAccount(accountAddress: Address) {
         <ModalHeader>Enter cold storage private key</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Text sx={{ fontSize: 16 }}>Enter your private storage key.</Text>
+          <Text fontSize={16}>Enter your private storage key.</Text>
           <Input placeholder="0xf0437bad5…" value={privateKey} onChange={(e) => setPrivateKey(e.currentTarget.value)} />
         </ModalBody>
         <ModalFooter>
-          <Button colorScheme="blue" onClick={onEnter} isDisabled={!isValidPrivateKey}>
+          <Button colorScheme="primary" onClick={onEnter} isDisabled={!isValidPrivateKey}>
             Confirm
           </Button>
         </ModalFooter>

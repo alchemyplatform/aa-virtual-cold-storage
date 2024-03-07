@@ -10,7 +10,7 @@ interface UserCardRowProps {
   value: string | ReactNode;
 }
 
-export const UserCardRow = ({ action, title, value, copyable = false }: UserCardRowProps) => {
+export const UserCardRow = ({ action, title, value, copyable = false }: UserCardRowProps): JSX.Element => {
   const { onCopy } = useClipboard('');
   const toast = useToast();
 
@@ -41,7 +41,7 @@ export const UserCardRow = ({ action, title, value, copyable = false }: UserCard
   );
 
   return (
-    <Flex>
+    <Flex mb={8}>
       {_copyable ? (
         <Button bg="white" p="0" flex={1} h="40px" flexDirection="row" onClick={_onCopy}>
           {inner}

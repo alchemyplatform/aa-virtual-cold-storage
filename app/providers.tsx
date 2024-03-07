@@ -1,6 +1,7 @@
 'use client';
 
-import { SignerContextProvider } from '@/context/signer';
+import { SignerContextProvider } from '@/context/account/signer';
+import { GlobalModalProvider } from '@/context/app/modal';
 import { GlobalStyle } from '@/theme/globalstyles';
 import { default as theme } from '@/theme/theme';
 import { getRpcUrl } from '@/utils/alchemy';
@@ -36,7 +37,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       >
         <Global styles={GlobalStyle} />
         <QueryClientProvider client={queryClient}>
-          <SignerContextProvider client={clientConfig}>{children}</SignerContextProvider>
+          <SignerContextProvider client={clientConfig}>
+            <GlobalModalProvider>{children}</GlobalModalProvider>
+          </SignerContextProvider>
         </QueryClientProvider>
       </ChakraProvider>
     </CacheProvider>

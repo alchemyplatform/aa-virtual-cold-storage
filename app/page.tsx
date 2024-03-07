@@ -3,7 +3,7 @@
 import { LoginSignupCard } from '@/components/auth/LoginSignupCard';
 import { Home } from '@/components/home';
 import { AccountContextProvider } from '@/context/account';
-import { useSignerContext } from '@/context/signer';
+import { useSignerContext } from '@/context/account/signer';
 import { Center, Spinner } from '@chakra-ui/react';
 
 export default function Page() {

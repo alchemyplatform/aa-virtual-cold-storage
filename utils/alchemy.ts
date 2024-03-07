@@ -1,4 +1,3 @@
-import { env } from '@/env.mjs';
 import { AlchemySettings, Network } from 'alchemy-sdk';
 
 export function getRpcUrl() {
@@ -27,5 +26,5 @@ export const getAlchemySettings = (nft?: boolean): AlchemySettings => {
     };
   }
 
-  return { network: Network.ARB_SEPOLIA, apiKey: env.ALCHEMY_API_KEY };
+  return { network: Network.ARB_SEPOLIA, apiKey: '6-7bbRdhqAvOKomY2JhAladgpGf7AQzR' /*env.ALCHEMY_API_KEY*/ };
 };
