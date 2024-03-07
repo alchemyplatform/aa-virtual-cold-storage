@@ -1,12 +1,12 @@
 'use client';
 
 import { LoginSignupCard } from '@/components/auth/LoginSignupCard';
-import { UserCard } from '@/components/auth/UserCard';
+import { Home } from '@/components/home';
 import { AccountContextProvider } from '@/context/account';
 import { useSignerContext } from '@/context/signer';
 import { Center, Spinner } from '@chakra-ui/react';
 
-export default function Home() {
+export default function Page() {
   const { signer, account, isLoadingUser, refetchUserDetails } = useSignerContext();
 
   return (
@@ -17,7 +17,7 @@ export default function Home() {
         <LoginSignupCard signer={signer} onLogin={refetchUserDetails} />
       ) : (
         <AccountContextProvider account={account}>
-          <UserCard />
+          <Home />
         </AccountContextProvider>
       )}
     </Center>

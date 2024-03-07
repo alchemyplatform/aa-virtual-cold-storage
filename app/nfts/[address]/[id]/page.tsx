@@ -1,48 +1,33 @@
 'use client';
 
-import { AccountContextProvider, useAccountContext } from '@/context/account';
+import { useAccountContext } from '@/context/account';
 import { useSignerContext } from '@/context/signer';
 import useRequestStorageKeyAccount from '@/hooks/useRequestStorageKeyAccount';
 import { ColdStoragePluginAbi } from '@/plugin';
+import { getAlchemySettings } from '@/utils/alchemy';
 import { COLD_STORAGE_PLUGIN_ADDRESS } from '@/utils/constants';
 import { waitForUserOp } from '@/utils/userOps';
 import { freelyMintableNftAbi } from '@/utils/wagmi';
+import { alchemyEnhancedApiActions } from '@alchemy/aa-alchemy';
 import { Box, Button, Image, Input, Text } from '@chakra-ui/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Alchemy, Network } from 'alchemy-sdk';
+import { Alchemy } from 'alchemy-sdk';
 import { ChangeEvent, useState } from 'react';
 import { Address, encodeFunctionData, getContract } from 'viem';
 
-const alchemy = new Alchemy({ network: Network.ARB_SEPOLIA, apiKey: '6-7bbRdhqAvOKomY2JhAladgpGf7AQzR' });
+const alchemy = new Alchemy(getAlchemySettings(true));
 const LOCK_DURATION = 600; // Ten minutes
 
-export default function WrappedPage({ params }: { params: { address: Address; id: string } }) {
-  const { account, isLoadingUser } = useSignerContext();
-
-  if (isLoadingUser) {
-    return undefined;
-  }
-  if (!account) {
-    if (typeof window !== 'undefined') {
-      window.location.href = '/';
-    }
-    return undefined;
-  }
-  return (
-    <AccountContextProvider account={account}>
-      <Page params={params} />
-    </AccountContextProvider>
-  );
-}
-
-function Page({ params: { address, id } }: { params: { address: Address; id: string } }) {
+export default function Page({ params: { address, id } }: { params: { address: Address; id: string } }) {
   const { account } = useSignerContext();
   const { client } = useAccountContext();
 
   const { data: nftData, error: nftError } = useQuery({
     queryKey: ['nft-page', address, id],
     queryFn: async () => {
-      const { image, name } = await alchemy.nft.getNftMetadata(address, id, {});
+      const { image, name } = await client
+        .extend(alchemyEnhancedApiActions(alchemy))
+        .nft.getNftMetadata(address, id, {});
       return { imageSrc: image.cachedUrl, name };
     }
   });
