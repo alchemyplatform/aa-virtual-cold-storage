@@ -87,8 +87,8 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
                 "Existing lock in place"
             );
             erc721Locks[msg.sender].set(true, lock.contractAddress, 0, block.timestamp + lock.duration);
-            emit ERC721Locked(msg.sender, lock.duration);
         }
+        emit ERC721CollectionsLocked(msg.sender, locks);
     }
 
     /// @inheritdoc IColdStoragePlugin
@@ -107,6 +107,7 @@ contract ColdStoragePlugin is IColdStoragePlugin, BasePlugin {
                 false, lock.token.contractAddress, lock.token.tokenId, block.timestamp + lock.duration
             );
         }
+        emit ERC721TokensLocked(msg.sender, locks);
     }
 
     /// @inheritdoc IColdStoragePlugin
