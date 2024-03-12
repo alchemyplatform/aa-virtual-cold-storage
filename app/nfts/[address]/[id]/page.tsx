@@ -15,6 +15,8 @@ import { Address, encodeFunctionData } from 'viem';
 const LOCK_DURATION = 600; // Ten minutes
 
 export default function Page({ params: { address, id } }: { params: { address: Address; id: string } }) {
+  const [isTransferred, setIsTransferred] = useState(false);
+  const [errorText, setErrorText] = useState('');
   const { account } = useSignerContext();
   const { client } = useAccountContext();
 
@@ -115,6 +117,15 @@ export default function Page({ params: { address, id } }: { params: { address: A
         ]
       });
       await waitForUserOp(client, hash);
+      setIsTransferred(true);
+    },
+    onError: (error: any) => {
+      try {
+        const jsonRpcResponse = JSON.parse(error.details);
+        setErrorText(jsonRpcResponse.message);
+      } catch (e) {
+        console.error(e);
+      }
     }
   });
 
@@ -138,6 +149,7 @@ export default function Page({ params: { address, id } }: { params: { address: A
         ]
       });
       await waitForUserOp(client, hash);
+      setIsTransferred(true);
     }
   });
 
@@ -160,36 +172,48 @@ export default function Page({ params: { address, id } }: { params: { address: A
       <Skeleton isLoaded={!isLoading}>
         <Image
           src={image?.cachedUrl ?? image?.pngUrl ?? image?.originalUrl}
+          sx={{ opacity: isTransferred ? 0.5 : 1 }}
           alt={name ?? `${contract.address}.${tokenId}`}
         />
       </Skeleton>
       <Skeleton isLoaded={!isLoading}>
         <Text>{name}</Text>
       </Skeleton>
+      {isTransferred && <Text>(Not owned)</Text>}
 
       <Input placeholder="Enter address…" value={transferAddress} onChange={handleTransferAddressChange} />
       <Box mt={1}>
         <Button
-          isDisabled={isLoading || (transfer.isPending && !transferAddress.match(/^0x[0-9a-fA-F]{40}$/))}
+          isDisabled={
+            isLoading || isTransferred || (transfer.isPending && !transferAddress.match(/^0x[0-9a-fA-F]{40}$/))
+          }
           onClick={() => transfer.mutate()}
         >
           {transfer.isPending ? 'Transferring…' : 'Transfer'}
         </Button>
         <Button
           ml={1}
-          isDisabled={isLoading || (transferWithStorageKey.isPending && !transferAddress.match(/^0x[0-9a-fA-F]{40}$/))}
+          isDisabled={
+            isLoading ||
+            isTransferred ||
+            (transferWithStorageKey.isPending && !transferAddress.match(/^0x[0-9a-fA-F]{40}$/))
+          }
           onClick={() => transferWithStorageKey.mutate()}
         >
           {transferWithStorageKey.isPending ? 'Transferring…' : 'Transfer with storage key'}
         </Button>
       </Box>
+      {errorText && <Text sx={{ color: 'red.300' }}>{errorText}</Text>}
       <Box mt={4}>
-        <Button isDisabled={isLoading || lockNft.isPending || isTokenLocked} onClick={() => lockNft.mutate()}>
+        <Button
+          isDisabled={isLoading || isTransferred || lockNft.isPending || isTokenLocked}
+          onClick={() => lockNft.mutate()}
+        >
           {lockNft.isPending ? 'Locking…' : 'Lock'}
         </Button>
         <Button
           ml={1}
-          isDisabled={isLoading || unlockNft.isPending || !isTokenLocked}
+          isDisabled={isLoading || isTransferred || unlockNft.isPending || !isTokenLocked}
           onClick={() => unlockNft.mutate()}
         >
           {unlockNft.isPending ? 'Unlocking…' : 'Unlock'}
@@ -197,14 +221,14 @@ export default function Page({ params: { address, id } }: { params: { address: A
       </Box>
       <Box mt={4}>
         <Button
-          isDisabled={isLoading || lockCollection.isPending || isCollectionLocked}
+          isDisabled={isLoading || isTransferred || lockCollection.isPending || isCollectionLocked}
           onClick={() => lockCollection.mutate()}
         >
           {lockCollection.isPending ? 'Locking…' : 'Lock collection'}
         </Button>
         <Button
           ml={1}
-          isDisabled={isLoading || unlockCollection.isPending || !isCollectionLocked}
+          isDisabled={isLoading || isTransferred || unlockCollection.isPending || !isCollectionLocked}
           onClick={() => unlockCollection.mutate()}
         >
           {unlockCollection.isPending ? 'Unlocking…' : 'Unlock collection'}
