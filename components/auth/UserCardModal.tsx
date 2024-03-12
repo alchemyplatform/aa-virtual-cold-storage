@@ -28,7 +28,7 @@ import {
   Tooltip,
   useToast
 } from '@chakra-ui/react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { HiOutlineFingerPrint, HiOutlineLogout } from 'react-icons/hi';
 import { encodeFunctionData } from 'viem';
@@ -65,12 +65,10 @@ export const UserCardModal = () => {
   const [hasClosedPrivateKeyModal, setHasClosedPrivateKeyModal] = useState(false);
   const closePrivateKeyModal = useCallback(() => setHasClosedPrivateKeyModal(true), []);
 
-  const { isPluginInstalled: getIsPluginInstalled } = usePlugin<typeof ColdStoragePluginAbi>(client, ColdStoragePlugin);
+  const [hasClosedExportedKeyModal, setHasClosedExportedKeyModal] = useState(false);
+  const closeExportedKeyModal = useCallback(() => setHasClosedExportedKeyModal(true), []);
 
-  const { data: isPluginInstalled } = useQuery({
-    queryKey: ['is-plugin-installed'],
-    queryFn: () => getIsPluginInstalled()
-  });
+  const { setIsPluginInstalled, isPluginInstalled } = usePlugin<typeof ColdStoragePluginAbi>(client, ColdStoragePlugin);
 
   const {
     mutate: mutateInstallColdStorage,
@@ -107,6 +105,7 @@ export const UserCardModal = () => {
         ]
       });
       await waitForUserOp(client, mintHash);
+      setIsPluginInstalled(true);
       return storagePrivateKey;
     }
   });
@@ -115,14 +114,15 @@ export const UserCardModal = () => {
 
   const {
     mutate: exportWallet,
-    isPending,
-    data
+    isPending: isExportingWallet,
+    data: exportedWalletKey
   } = useMutation({
-    mutationFn: () =>
-      signer.exportWallet({
+    mutationFn: () => {
+      return signer.exportWallet({
         iframeContainerId: exportWalletContainerId,
         iframeElementId: exportWalletElementId
-      })
+      });
+    }
   });
 
   const { mutate: addPasskey } = useMutation({
@@ -195,38 +195,65 @@ export const UserCardModal = () => {
 
           <Flex gap={4}>
             <Button
-              bg="white"
               flex={1}
               h="40px"
               flexDirection="row"
               onClick={() => exportWallet()}
-              isLoading={isPending}
+              isLoading={isExportingWallet}
               spinnerPlacement="end"
-              isDisabled={!!data}
+              isDisabled={!!exportedWalletKey}
             >
               Export Wallet
             </Button>
             <Button
               h="40px"
               onClick={installColdStorage}
-              isDisabled={!account || isInstallingColdStorage || isPluginInstalled || hasClosedPrivateKeyModal}
+              isDisabled={!account || isPluginInstalled}
+              spinnerPlacement="end"
+              isLoading={isInstallingColdStorage}
             >
               {isInstallingColdStorage
                 ? 'Installing cold storage plugin'
-                : isPluginInstalled || hasClosedPrivateKeyModal
+                : isPluginInstalled
                   ? 'Cold storage plugin installed'
                   : 'Install cold storage plugin'}
             </Button>
           </Flex>
-          {data && (
-            <Flex id={exportWalletContainerId}>
-              <style>{iframeCss}</style>
-            </Flex>
-          )}
         </ModalBody>
         <ModalFooter>
           <Button onClick={hideModal}>Close</Button>
         </ModalFooter>
+
+        <Modal
+          isOpen={!!exportedWalletKey && !hasClosedExportedKeyModal}
+          closeOnOverlayClick={false}
+          onClose={closeExportedKeyModal}
+        >
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Your Alchemy Signer private key</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <Text fontSize={16}>
+                Save your private key in a secure location. You&apos;ll need this to access your locked assets! After
+                closing this dialog, your private key will not be shown again.
+              </Text>
+              <Box p={2} mt={2} borderWidth="1" borderColor="gray.500" borderRadius={4}>
+                {exportedWalletKey && (
+                  <Flex id={exportWalletContainerId}>
+                    <style>{iframeCss}</style>
+                  </Flex>
+                )}
+              </Box>
+            </ModalBody>
+            <ModalFooter>
+              <Button colorScheme="accent" onClick={closeExportedKeyModal}>
+                I have saved my private key
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+
         <Modal
           isOpen={!!storagePrivateKey && !hasClosedPrivateKeyModal}
           closeOnOverlayClick={false}

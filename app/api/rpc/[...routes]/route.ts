@@ -4,6 +4,7 @@
 // export const preferredRegion = 'iad1';
 
 import { NextResponse } from 'next/server';
+import { env } from 'process';
 
 export async function POST(req: Request, { params }: { params: { routes: string[] } }) {
   const body = await req.json().catch(console.error);
@@ -11,7 +12,7 @@ export async function POST(req: Request, { params }: { params: { routes: string[
   const res = await fetch(`https://api.g.alchemy.com/${params.routes.join('/')}`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${'6-7bbRdhqAvOKomY2JhAladgpGf7AQzR' /*env.ALCHEMY_API_KEY*/}`,
+      Authorization: `Bearer ${env.ALCHEMY_API_KEY}`,
       ...req.headers
     },
     body: JSON.stringify(body)
