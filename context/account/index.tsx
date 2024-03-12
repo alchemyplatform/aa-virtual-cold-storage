@@ -79,7 +79,7 @@ export const AccountContextProvider = ({ children, account }: PropsWithChildren<
   const { store, setClient } = useGlobalModalContext();
 
   useEffect(() => {
-    if (!store.client && client) setClient(client);
+    if (!store.client) setClient(client);
   }, [client, setClient, store.client]);
 
   return <AccountContext.Provider value={{ client: client! }}>{children}</AccountContext.Provider>;

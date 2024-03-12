@@ -22,7 +22,7 @@ export const Home = () => {
     fetchPreviousPage,
     hasPreviousPage,
     isLoading
-  }: NftsForOwnerResponse = useNftsForOwner({ client: client!, address: account!.address });
+  }: NftsForOwnerResponse = useNftsForOwner({ client, address: account!.address });
 
   const page: Page = {
     pageSize,
