@@ -6,10 +6,10 @@ import { GlobalStyle } from '@/theme/globalstyles';
 import { default as theme } from '@/theme/theme';
 import { getRpcUrl } from '@/utils/alchemy';
 import { CacheProvider } from '@chakra-ui/next-js';
-import { ChakraProvider, ColorModeScript, extendTheme } from '@chakra-ui/react';
+import { ChakraProvider, ColorModeScript, Spinner, extendTheme } from '@chakra-ui/react';
 import { Global } from '@emotion/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 
 const customTheme = extendTheme(theme);
 
@@ -37,9 +37,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
       >
         <Global styles={GlobalStyle} />
         <QueryClientProvider client={queryClient}>
-          <SignerContextProvider client={clientConfig}>
-            <GlobalModalProvider>{children}</GlobalModalProvider>
-          </SignerContextProvider>
+          <Suspense
+            fallback={<Spinner thickness="4px" speed="0.75s" emptyColor="white" color="primary.500" size="xl" />}
+          >
+            <SignerContextProvider client={clientConfig}>
+              <GlobalModalProvider>{children}</GlobalModalProvider>
+            </SignerContextProvider>
+          </Suspense>
         </QueryClientProvider>
       </ChakraProvider>
     </CacheProvider>
