@@ -12,19 +12,20 @@
 # Core Plugin Functions
 
 1. Installing the Cold Storage Plugin
-    - The owner specifies a highly secure storage key when installing the plugin
+   - The owner specifies a highly secure storage key when installing the plugin
 2. Locking an NFT
-    - The owner can lock NFTs (all ERC721s, collections, or tokens) and place them in cold storage
-3. Transferring NFT as the Owner 
-    - Transferring a locked NFT is blocked
-    - Transferring a NFT that isn’t locked is fine
+   - The owner can lock NFTs (all ERC721s, collections, or tokens) and place them in cold storage
+3. Transferring NFT as the Owner
+   - Transferring a locked NFT is blocked
+   - Transferring a NFT that isn’t locked is fine
 4. Transferring a Locked NFT with Storage Key
-    - The storage key has permission to transfer locked NFTs
+   - The storage key has permission to transfer locked NFTs
 
 # Addtional Plugin Functions
+
 1. The storage key also has permissions to unlock NFTs and change the storage key
 2. Uninstalling the Plugin
-    - The plugin **blocks uninstalls** when there locked NFTs
+   - The plugin **blocks uninstalls** when there locked NFTs
 
 ## Demo
 
@@ -38,10 +39,6 @@
   <img width="400" alt="Screenshot 2024-03-12 at 2 30 42 PM" src="https://github.com/OMGWINNING/cold-storage-plugin/assets/3278577/3deab2ce-0884-45aa-b944-4a126b440eb3">
   <img width="400" alt="Screenshot 2024-03-12 at 2 30 58 PM" src="https://github.com/OMGWINNING/cold-storage-plugin/assets/3278577/75675010-cccc-46c5-b3ea-5863fe1e323b">
 </details>
-
-# Presentation Slides
-
-[Google Doc](https://docs.google.com/presentation/d/1mxz7FeNv8RusC-3xfPAZddxZ6RGAJKknIlGMCPiQVvQ/)
 
 ## Development
 
