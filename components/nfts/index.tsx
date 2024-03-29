@@ -21,7 +21,10 @@ type NftsProps = {
 
 export const Nfts = ({ items, page, isLoading, size = 256 }: NftsProps) => {
   return !isLoading && items.length === 0 ? (
-    <Text>{!page.prevPageKey ? `This account doesn't have any NFTs yet` : 'No more NFTs to show'}</Text>
+    <Text>{
+      !page.prevPageKey ? `'This account doesn't have any NFTs yet - install the cold storage plugin under 'Your Account' and you will receive some!`
+      : 'No more NFTs to show'
+    }</Text>
   ) : (
     <SimpleGrid columns={{ base: 2, md: 3, lg: 4 }} spacing={4}>
       {items.map(({ name, contract, tokenId, image }: OwnedNft) => {
